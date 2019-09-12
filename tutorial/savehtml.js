@@ -4,7 +4,10 @@ const puppeteer = require('puppeteer');
 const c = require('ansi-colors');
 const axios = require('axios')
 
+require('module-alias/register')
+
 const { sleep, mkdirSync, writeFile } = require('../src/helper/tools')
+const { executablePath } = require('@config/index')
 
 async function saveHtml(urls) {
   let len = urls.length
@@ -18,7 +21,7 @@ async function saveHtml(urls) {
 
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: 'D:/softwares/Chromium_v692609/chrome-win/chrome.exe'
+    executablePath
   });
 
   for (let i = 0; i < len; i++) {

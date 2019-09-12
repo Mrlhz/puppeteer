@@ -12,6 +12,12 @@
   "devDependencies": {
     "ansi-colors": "^4.1.1",
     "axios": "^0.19.0",
+    "module-alias": "^2.2.1",
     "puppeteer": "^1.19.0"
+  },
+  "_moduleAliases": {
+    "@root": ".",
+    "@helper": "./src/helper",
+    "@config": "./src/config"
   }
 }

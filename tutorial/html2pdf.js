@@ -1,7 +1,12 @@
 const path = require('path');
 
 const puppeteer = require('puppeteer');
+const devices = require('puppeteer/DeviceDescriptors')
 const c = require('ansi-colors');
+
+require('module-alias/register')
+
+const { executablePath } = require('@config/index')
 
 const { sleep, mkdirSync, writeFile } = require('../src/helper/tools')
 
@@ -10,20 +15,21 @@ const { books_mdn } = require('../src/config/index')
 
 /**
  * @description 保存页面为pdf convertHTMLToPDF 
- * @todo 先保存
+ * @todo 排版格式需要优化
  *
  * @param {Array} urls URL to navigate page to. The url should include scheme, e.g. https://
  */
 async function html2pdf(urls) {
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: 'D:/softwares/Chromium_v692609/chrome-win/chrome.exe'
+    executablePath
   });
 
   let len = urls.length;
   for (let i = 0; i < len; i++) {
     const page = await browser.newPage();
 
+    // await page.emulate(devices['iPhone X'])
     await page.setViewport({
       width: 1920,
       height: 1200
@@ -45,9 +51,9 @@ async function html2pdf(urls) {
       await sleep(3000);
       await page.emulateMedia('screen');
       let title = await page.title()
-
+      const fileName = title.replace('|', '-') + '.pdf'
       await page.pdf({
-        path: path.resolve(books_mdn, title.replace('|', '-') + '.pdf'),
+        path: path.resolve(books_mdn, fileName),
         printBackground: true, // 是否打印背景图
         width: '1520px',
         // format: 'A2', // A2
@@ -65,7 +71,7 @@ async function html2pdf(urls) {
         // marginBottom: '1000px'
       });
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`);
-
+      console.log(`${c.cyan('file:')} ${fileName}`);
       await page.close();
     } catch (e) {
       console.log(e);
@@ -108,7 +114,7 @@ var u = [
  * `保存页面为pdf，保存目录在D:/books/mdn`
  */
 
-// html2pdf(urls.slice(8,9))
+html2pdf(urls.slice(8,9))
 // html2pdf(urls)
 // html2pdf(u)
 

@@ -5,7 +5,7 @@ const c = require('ansi-colors');
 
 const { sleep, mkdirSync, writeFile } = require('../src/helper/tools')
 
-const { mdn } = require('../src/config/index')
+const { mdn, executablePath } = require('../src/config/index')
 
 // 创建 mdn目录
 // mkdirSync(path.resolve(__dirname, '../data/mdn'))
@@ -18,7 +18,7 @@ const { mdn } = require('../src/config/index')
 async function main(url, topic='快速入门') {
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: 'D:/softwares/Chromium_v692609/chrome-win/chrome.exe'
+    executablePath
   })
   const page = await browser.newPage()
 
