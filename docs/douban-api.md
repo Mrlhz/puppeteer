@@ -61,6 +61,7 @@
 }
 ```
 
+> page_limit 最多返回500items
 #### 按热度排序 
 `https://movie.douban.com/j/search_subjects?type=tv&tag=国产剧&sort=recommend&page_limit=20&page_start=0`
 
@@ -84,13 +85,9 @@ http://learning.happymmall.com/
 
 
 
-hn.js 
-
-
-
 ### 影讯API合集
 
-- [](https://www.juhe.cn/docs/api/id/42)
+- [影讯API合集](https://www.juhe.cn/docs/api/id/42)
 
 
 名称	| 类型	| 说明
