@@ -5,7 +5,7 @@ const c = require('ansi-colors');
 const { wait, writeFile } = require('../../helper/tools')
 const { books_mdn_data } = require('../../config/index')
 const { formatUrls } = require('../../helper/urls')
-const { Browser } = require('../browser')
+const { Browser } = require('../../helper/browser')
 const { getBookListByTagHtml } = require('./html/getBookListByTag')
 
 /**
@@ -24,6 +24,10 @@ async function getBookListByTag(urls, options = {}) {
     const page = await instance.goto(urls[i])
     try {
       const item = await getBookListByTagHtml(page)
+      if(item.errMsg) {
+        console.log(c.yellowBright(item.errMsg))
+        break
+      }
       items.push(...item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {

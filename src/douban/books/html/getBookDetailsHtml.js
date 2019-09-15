@@ -1,5 +1,5 @@
 /**
- * @description 根据 `https://book.douban.com/subject/26829016/` 网站编写，返回`一本书`html内容
+ * @description 根据 e.g.`https://book.douban.com/subject/26829016/` 网站编写，返回`一本书`html内容
  *
  * @param {puppeteer.Page} page
  * @returns
@@ -7,9 +7,9 @@
 async function getBookDetailsHtml(page) {
   try {
     const html = await page.evaluate(() => {
-      if (document.querySelector('body').innerText.indexOf('检测到有异常请求') !== -1) {
-        console.log('检测到有异常请求从你的 IP 发出，请 登录 使用豆瓣。');
-        return {}
+      const errMsg = document.querySelector('body').innerText
+      if (errMsg.indexOf('检测到有异常请求') !== -1) {
+        return {errMsg} // 检测到有异常请求从你的 IP 发出，请 登录 使用豆瓣。
       } else {
         // getHtml
         const map = {
@@ -26,15 +26,15 @@ async function getBookDetailsHtml(page) {
           '丛书': 'series', // 丛书
           'ISBN': 'isbn',
         }
-        let summary = document.querySelector('#link-report')
-        let info = document.querySelector('#content .article #info')
+        const summary = document.querySelector('#link-report')
+        const info = document.querySelector('#content .article #info')
         let res = {}
         res.url = location.href;
         if (info) {
           info.innerText.split('\n').filter(v => v).forEach((item) => {
-            let index = item.indexOf(':')
-            let key = item.substring(0, index)
-            let value = item.substring(index + 1).trim()
+            const index = item.indexOf(':')
+            const key = item.substring(0, index)
+            const value = item.substring(index + 1).trim()
 
             if (key && map[key]) {
               if (key === '作者' || key === '译者') {
@@ -47,12 +47,12 @@ async function getBookDetailsHtml(page) {
             }
           })
         }
-        let rating_num = document.querySelector('#content .rating_num')
+        const rating_num = document.querySelector('#content .rating_num')
 
-        let a = document.querySelector('a.nbg')
-        let image = document.querySelector('a.nbg img')
-        let rating_people = document.querySelector('.rating_people span')
-        let id = location.href.split('subject/')[1]
+        const a = document.querySelector('a.nbg')
+        const image = document.querySelector('a.nbg img')
+        const rating_people = document.querySelector('.rating_people span')
+        const id = location.href.split('subject/')[1]
         res.id = id ? Number(id.replace('/', '')) : ''; // https://book.douban.com/subject/[id]/
         res.title = a ? a.getAttribute('title') : document.querySelector('h1 span[property="v:itemreviewed"]').innerText; // 
         res.category = ''; // 分类

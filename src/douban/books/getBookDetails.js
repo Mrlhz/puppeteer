@@ -4,8 +4,7 @@ const c = require('ansi-colors')
 
 const { proxyServer } = require('../../config/ip')
 const { wait, writeFile } = require('../../helper/tools')
-const { books_mdn_data } = require('../../config/index')
-const { Browser } = require('../browser')
+const { Browser } = require('../../helper/browser')
 const { getBookDetailsHtml } = require('./html//getBookDetailsHtml')
 
 /**
@@ -13,11 +12,12 @@ const { getBookDetailsHtml } = require('./html//getBookDetailsHtml')
  *
  * @param {Array} urls 导航的地址
  * @param {Object} [options={}]
- * @todo 
+ * @todo 效率低，豆瓣IP限制
  */
 async function getBookDetails(urls, options = {}) {
   console.time('time')
-  const { delay = 3000, type = '类型', name = ''} = options
+  const { delay = 3000, type = '类型', name = '', output = __dirname } = options
+  const fileName = name ? name : 'books-' + type
   const len = urls.length
   let items = []
   const instance = new Browser({
@@ -31,8 +31,12 @@ async function getBookDetails(urls, options = {}) {
     if(click) await page.click('.j.a_show_full')
     try {
       const item = await getBookDetailsHtml(page)
+      if(item.errMsg) {
+        console.log(c.yellowBright(item.errMsg))
+        break
+      }
       items.push(item)
-      haveOneSave(item, i)
+      haveOneSave(item, i, output)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {
       console.log(`${c.bgGreen('fail')} ${(i + 1)}/${len}`)
@@ -46,18 +50,24 @@ async function getBookDetails(urls, options = {}) {
     total: items.length,
     subjects: items
   }
-  let fileName = name ? name : type + '-details'
   writeFile(fileName + '.json', result, {
-    output: books_mdn_data
+    output
   })
   
   await instance.close()
   console.timeEnd('time')
 }
 
-function haveOneSave(item, name) {
-  writeFile(name + '.json', item, {
-    output: path.resolve(books_mdn_data, 'temp')
+/**
+ * @description 临时存文件
+ * @param {String} item 内容
+ * @param {String} name 文件名
+ * @param {String} output 存放路径
+ */
+function haveOneSave(item, name, output) {
+  console.log(output, 66);
+  writeFile(name + '-b.json', item, {
+    output: path.resolve(output, 'temp')
   })
 }
 
@@ -66,49 +76,6 @@ module.exports = {
   getBookDetails
 }
 
-
-/**
- * `测试`
- */
-const { name, subjects } = require('D:/books/mdn/data/诗词-simple.json')
-
-const urls = subjects.map((item) => item.url)
-
-// console.log(name)
-
-// 根据标签遍历1000本书
-getBookDetails(urls, {
-  delay: 4500,
-  type: name
-})
-
-
-
-// 获取一本或几本书
-// getBookDetails(['https://book.douban.com/subject/26836700/'], {
-//   delay: 5000,
-//   type: '编程',
-//   name: '输出文件名'
-// })
-
-// 内容简介需要展开
+// 内容简介需要展开 e.g.
 // https://book.douban.com/subject/1446625/
 // https://book.douban.com/subject/27028517/
-
-
-
-function filter(data) {
-  let arr = []
-  for (let i = 0; i < 183; i++) {
-    try {
-      let item = require('D:\\books\\mdn\\data\\temp\\' + i + '.json')
-    } catch (e) {
-    console.log(e);
-      arr.push(i)
-    }    
-  }
-  console.log(arr);
-}
-
-
-// filter()
