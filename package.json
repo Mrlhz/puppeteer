@@ -18,6 +18,9 @@
   "_moduleAliases": {
     "@root": ".",
     "@helper": "./src/helper",
-    "@config": "./src/config"
+    "@config": "./src/config",
+    "@tutorial": "./src/config",
+    "@data": "./data",
+    "@area": "./data/area"
   }
 }

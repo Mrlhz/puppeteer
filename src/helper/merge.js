@@ -46,7 +46,7 @@ function merge(name, options = {}) {
   let items = []
   for (let i = start; i <= end; i++) {
     try {
-      let item = require(path.join(temp, i + '.json'))
+      let item = require(path.join(temp, i + '-m.json'))
       if (item.id) {
         items.push(item)
       } else {
