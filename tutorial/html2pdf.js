@@ -19,7 +19,7 @@ const { books_mdn } = require('../src/config/index')
  *
  * @param {Array} urls URL to navigate page to. The url should include scheme, e.g. https://
  */
-async function html2pdf(urls) {
+async function html2pdf(urls, options) {
   const browser = await puppeteer.launch({
     headless: true,
     executablePath
@@ -35,12 +35,6 @@ async function html2pdf(urls) {
       height: 1200
     });
 
-    page.on("console", msg => {
-      for (let i = 0; i < msg.args.length; ++i) {
-        console.log(`${jobId} - From page. Arg ${i}: ${msg.args[i]}`);
-      }
-    });
-
     try {
       console.log(`${c.green('fetch')} ${urls[i]}`);
       await page.goto(urls[i], {
@@ -51,33 +45,18 @@ async function html2pdf(urls) {
       await sleep(3000);
       await page.emulateMedia('screen');
       let title = await page.title()
-      const fileName = title.replace('|', '-') + '.pdf'
+      const fileName = title.replace(/[\\\/\:\*\?\"\<\>\|]/g, '-') + '.pdf' // replace \/:*?"<>|
       await page.pdf({
         path: path.resolve(books_mdn, fileName),
-        printBackground: true, // 是否打印背景图
-        width: '1520px',
-        // format: 'A2', // A2
-        // displayHeaderFooter: true, // 显示页眉和页脚
-        // headerTemplate: '<span style="font-size: 30px; width: 200px; height: 200px; background-color: black; color: white; margin: 20px;">url</span>',
-        // footerTemplate: '<span style="font-size: 30px; width: 50px; height: 50px; background-color: red; color:black; margin: 20px;">Footer date</span>',
-        // margin: {
-        //   top: '50px',
-        //   right: '20px',
-        //   bottom: '20px',
-        //   left: '20px'
-        // }
-        // marginTop: '100px',
-        // marginRight: '500px',
-        // marginBottom: '1000px'
-      });
-      console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`);
+        ...options
+      })
       console.log(`${c.cyan('file:')} ${fileName}`);
+      console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`);
       await page.close();
     } catch (e) {
       console.log(e);
     }
   }
-
 
   await browser.close();
 }
@@ -114,10 +93,16 @@ var u = [
  * `保存页面为pdf，保存目录在D:/books/mdn`
  */
 
-html2pdf(urls.slice(8,9))
-// html2pdf(urls)
-// html2pdf(u)
+// html2pdf(urls.slice(3,4), {
+//   printBackground: true, // 是否打印背景图
+//   width: '1520px',
+// })
 
 // html2pdf(['file:///D:/books/mdn/Operator_Precedence.html'])
 
 // html2pdf(['file:///D:/books/mdn/html/0.html'])
+
+// html2pdf(['http://www.zhufengpeixun.cn/train/vue-info/component.html#%E5%BF%AB%E9%80%9F%E5%8E%9F%E5%9E%8B%E5%BC%80%E5%8F%91'], {
+//   printBackground: true, // 是否打印背景图
+//   width: '1520px'
+// })
