@@ -196,5 +196,6 @@ module.exports = {
   serializedParams,
   formatTime,
   mkdirSync,
-  readDirFiles
+  readDirFiles,
+  exists
 }

@@ -16,6 +16,21 @@
 - type  综合排序 T   按出版日期排序 R   按评价排序 S
 
 
-### 
+### 获取图书详情
 
-`https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=电影&start=0`
+```js
+1. getBookListByTag.js 获取 urls
+2. getBookDetails.js 遍历urls，保存json数据
+```
+
+
+### 获取电影详情
+
+```js
+1.  获取 urls
+2. getMovieDetails.js 遍历urls，保存json数据
+3. 执行 index.js
+```
+
+
+> `getBookDetails.js` 和 `getMovieDetails.js` 除了处理html方法，几个参数不同，执行流程是一样的

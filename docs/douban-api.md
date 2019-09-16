@@ -1,17 +1,80 @@
 # 
 
 
-### 选影视
-`https://movie.douban.com/tag/#/`
+### 选影视 `https://movie.douban.com/tag/#/`
 
 
-`https://movie.douban.com/j/search_tags?type=movie&source=index`
+- `https://movie.douban.com/j/search_tags?type=movie&source=index`
+
+> result
 
 ```js
 {"tags":["热门","最新","豆瓣高分","冷门佳片","华语","欧美","韩国","日本"]}
 ```
 
-`https://movie.douban.com/j/search_subjects?type=tv&tag=热门&page_limit=50&page_start=0`
+---
+
+- `https://movie.douban.com/`
+- `https://movie.douban.com/j/search_subjects?type=tv&tag=热门&page_limit=50&page_start=0`
+
+> 最近热门电视剧 - 热门
+
+---
+
+- `https://movie.douban.com/tag/#/?sort=S&range=0,10&tags=电影`
+- `https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=电影&start=20`
+
+> result
+
+```js
+{
+    "data": [
+        {
+            "directors": [
+                "艾伦·吉布森"
+            ],
+            "rate": "9.5",
+            "cover_x": 550,
+            "star": "50",
+            "title": "控方证人",
+            "url": "https://movie.douban.com/subject/5294851/",
+            "casts": [
+                "拉尔夫·理查德森",
+                "黛博拉·蔻儿",
+                "博·布里奇斯",
+                "黛安娜·里格",
+                "温蒂·希勒"
+            ],
+            "cover": "https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2367853261.jpg",
+            "id": "5294851",
+            "cover_y": 762
+        },
+        ...
+        {
+            "directors": [
+                "杉田成道"
+            ],
+            "rate": "9.5",
+            "cover_x": 1049,
+            "star": "50",
+            "title": "北国之恋：1989归乡",
+            "url": "https://movie.douban.com/subject/3794149/",
+            "casts": [
+                "田中邦卫",
+                "吉冈秀隆",
+                "中岛朋子",
+                "绪形直人",
+                "横山惠"
+            ],
+            "cover": "https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2522940189.jpg",
+            "id": "3794149",
+            "cover_y": 1500
+        }
+    ]
+}
+```
+
+---
 
 ```json
 
@@ -28,6 +91,8 @@
 ```js
 {"tags":["热门","国产剧","综艺","美剧","日剧","韩剧","日本动画","纪录片"]}
 ```
+
+---
 
 `https://movie.douban.com/j/search_subjects?type=movie&tag=热门&page_limit=50&page_start=0`
 
