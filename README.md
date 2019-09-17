@@ -29,3 +29,22 @@ const browser = await puppeteer.launch({
 
 科学上网手动[下载chromium](https://download-chromium.appspot.com/)
 
+
+### 目录
+
+- [爬取统计用区划代码和城乡划分代码](./src/CityParser/index.js)
+
+```shell
+# 修改配置，去掉注释
+node src/CityParser/index.js
+```
+- [爬取豆瓣图书](./src/douban/books/index.js)
+
+```
+node src/douban/books/index.js
+```
+- [爬取豆瓣电影](./src/douban/movies/index.js)
+
+```
+node src/douban/movies/index.js
+```
