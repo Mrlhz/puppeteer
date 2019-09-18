@@ -45,8 +45,8 @@ function writeFile(fileName, data = '', options = {}) {
     encoding = 'utf8'
   } = options
   log('output', output);
-  output = output ? path.resolve(output, fileName) : path.resolve(__dirname, '../../files', fileName)
-  data = typeof data === 'string' ? data : JSON.stringify(data);
+  output = output ? path.resolve(output, fileName) : path.resolve(__dirname, '../../data', fileName)
+  data = typeof data === 'string' ? data : JSON.stringify(data)
   
   // content = content.replace(/\n\r/gi, '').replace(/\n/gi, '').replace(/\r/gi, '');
 
@@ -69,7 +69,7 @@ function writeFile(fileName, data = '', options = {}) {
  * @param {String} fileName
  * @returns
  */
-function readFile(fileName, { encoding = 'utf-8' } = {}) {
+function readFile(fileName, { encoding = 'utf8' } = {}) {
   return new Promise(function (resolve, reject) {
     fs.readFile(fileName, { encoding}, function(error, data) {
       if (error) return reject(error);
