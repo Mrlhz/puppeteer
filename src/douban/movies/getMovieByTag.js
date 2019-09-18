@@ -23,10 +23,9 @@ const log = console.log
  * @param {Object} options
  * @todo 一次请求1000条数据返回条目有限制
  */
-async function getMovieByTag(types, options) {
-  const { sort = sorts['rank'], output } = options
-  const urls = types.map((type) => utils.format(baseUrl, type))
-  console.log(urls)
+async function getMovieAndTvByTag(urls, options) {
+  const { type, tag, sort = sorts['rank'], output } = options
+  const list = []
   const instance = new Browser()
 
   for (let i = 0; i < urls.length; i++) {
@@ -38,41 +37,35 @@ async function getMovieByTag(types, options) {
         return pre.innerHTML
       })
       const { subjects } = JSON.parse(data)
-      const result = {
-        type: types[i],
-        sort,
-        total: subjects.length,
-        subjects
+      if(!subjects || subjects.length === 0) {
+        log(c.red('subjects length: 0'))
+        break
       }
-      writeFile(types[i] + '.min.json', result, {
-        output
-      })
+      list.push(...subjects)
     } catch (e) {
       log(c.red(e))
     }
     await wait(5000)
   }
+  const result = {
+    type,
+    tag,
+    sort,
+    total: list.length,
+    subjects: list
+  }
+  writeFile(tag + '.min.json', result, {
+    output
+  })
   await instance.close()
 }
 
-/**
- * `选电影`
- */
-// getMovieByTag(movie, {
-//   sort: sorts['rank'],
-//   output: movie_min_dir
-// })
-
 
 /**
- * `热门电视剧`
+ * @description 拼凑urls
+ * @param {Object} [options={}]
+ * @returns {Array} urls列表
  */
-// getMovieByTag(tv, {
-//   sort: sorts['rank'],
-//   output: tv_min_dir
-// })
-
-
 function handleUrls(options={}) {
   let {
     type = 'tv', tag = '热门', sort = 'rank', page_limit = 100, page_start = 0, end = 500,
@@ -85,23 +78,43 @@ function handleUrls(options={}) {
   return urls
 }
 
-handleUrls()
 
-// 1. urls
-// [ 'https://movie.douban.com/explore#!type=movie&tag=热门&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=最新&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=经典&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=可播放&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=豆瓣高分&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=冷门佳片&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=华语&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=欧美&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=韩国&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=日本&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=动作&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=喜剧&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=爱情&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=科幻&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=悬疑&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=恐怖&page_limit=500&page_start=0',
-//   'https://movie.douban.com/explore#!type=movie&tag=文艺&page_limit=500&page_start=0' ]
+async function main(types, options={}) {
+  const { type = 'tv', sort = 'rank', output } = options
+  for (let i = 0; i < types.length; i++) {
+    const urls = handleUrls({tag: types[i], sort, type })
+    console.log(urls)
+    await getMovieAndTvByTag(urls, {
+      type,
+      tag: types[i],
+      sort: sorts[sort],
+      output
+    })
+    if (url.length > 1) {
+      await wait(15000)
+    }
+  }
+}
+
+
+/**
+ * `选电影`
+ */
+// main(movie, {
+//   type: 'movie',
+//   output: movie_min_dir
+// })
+
+
+/**
+ * `热门电视剧`
+ */
+main(['热门'], {
+  type: 'tv',
+  output: tv_min_dir
+})
+
+main(tv, {
+  type: 'tv',
+  output: tv_min_dir
+})
