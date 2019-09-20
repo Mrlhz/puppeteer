@@ -10,11 +10,12 @@
 ### 安装 Puppeteer
 
 ```shell
-set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 # 阻止下载 Chromium
+set PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 # 阻止下载 Chromium, cmd下有效
 
 # 或者可以这样干，只下载模块而不build
 yarn add -D puppeteer --ignore-scripts
 
+# 下载puppeteer & Chromium模块
 yarn add puppeteer -D
 
 ```
@@ -31,6 +32,8 @@ const browser = await puppeteer.launch({
 
 
 ### 目录
+
+> 数据来源于网络整理，仅供学习。
 
 - [爬取统计用区划代码和城乡划分代码](./src/CityParser/index.js)
 
