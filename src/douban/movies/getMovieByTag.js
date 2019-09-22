@@ -3,6 +3,7 @@ const utils = require('util')
 const c = require('ansi-colors')
 
 const { wait, writeFile } = require('../../helper/tools')
+const { makeMovieUrls } = require('../../helper/urls')
 const { movie_min_dir, tv_min_dir } = require('../../config/index')
 const { Browser } = require('../../helper/browser')
 
@@ -48,10 +49,11 @@ async function getMovieAndTvByTag(urls, options) {
     await wait(5000)
   }
   const result = {
-    type,
+    type, // tv || movie
     tag,
-    sort,
+    sort, // default '按评价排序'
     total: list.length,
+    msg: '数据来源于网络整理，仅供学习。',
     subjects: list
   }
   writeFile(tag + '.min.json', result, {
@@ -60,30 +62,11 @@ async function getMovieAndTvByTag(urls, options) {
   await instance.close()
 }
 
-
-/**
- * @description 拼凑urls
- * @param {Object} [options={}]
- * @returns {Array} urls列表
- */
-function handleUrls(options={}) {
-  let {
-    type = 'tv', tag = '热门', sort = 'rank', page_limit = 100, page_start = 0, end = 500,
-    url = 'https://movie.douban.com/j/search_subjects?type=%s&tag=%s&sort=%s&page_limit=%s&page_start=%s'
-  } = options
-  let urls = []
-  for (let i = page_start; i < end; i += page_limit) {
-    urls.push(utils.format(url, type, tag, sort, page_limit, i))
-  }
-  return urls
-}
-
-
 async function main(types, options={}) {
-  const { type = 'tv', sort = 'rank', output } = options
+  const { type = 'tv', sort = 'rank', output = __dirname } = options
   for (let i = 0; i < types.length; i++) {
-    const urls = handleUrls({tag: types[i], sort, type })
-    console.log(urls)
+    const urls = makeMovieUrls({tag: types[i], sort, type })
+    log(urls)
     await getMovieAndTvByTag(urls, {
       type,
       tag: types[i],
@@ -91,7 +74,7 @@ async function main(types, options={}) {
       output
     })
     if (url.length > 1) {
-      await wait(15000)
+      await wait(3500)
     }
   }
 }
@@ -109,10 +92,10 @@ async function main(types, options={}) {
 /**
  * `热门电视剧`
  */
-main(['热门'], {
-  type: 'tv',
-  output: tv_min_dir
-})
+// main(['热门'], {
+//   type: 'tv',
+//   output: tv_min_dir
+// })
 
 main(tv, {
   type: 'tv',

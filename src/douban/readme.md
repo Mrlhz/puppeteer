@@ -27,7 +27,7 @@
 ### 获取电影详情
 
 ```js
-1.  获取 urls
+1. 获取 urls
 2. getMovieDetails.js 遍历urls，保存json数据
 3. 执行 index.js
 ```
