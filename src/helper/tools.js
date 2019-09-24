@@ -1,9 +1,11 @@
-const path = require('path');
-const fs = require('fs');
+const fs = require('fs')
+const path = require('path')
+const http = require('http')
+const https = require('https')
 
-const c = require('ansi-colors');
+const c = require('ansi-colors')
 
-const log = console.log;
+const log = console.log
 
 /**
  * @description 延迟
@@ -15,7 +17,7 @@ const log = console.log;
  */
 async function sleep (delay) {
   return new Promise(resolve => {
-    setTimeout(resolve, delay);
+    setTimeout(resolve, delay)
   })
 }
 
@@ -27,9 +29,9 @@ async function sleep (delay) {
  * @param {boolean} [log=true]
  */
 async function wait(timestamp=3000, islog=true, t='') {
-  if(islog) log(c.red(`Wait ${timestamp/1000} seconds`));
-  if(t) log(t);
-  await sleep(timestamp);
+  if(islog) log(c.red(`Wait ${timestamp/1000} seconds`))
+  if(t) log(t)
+  await sleep(timestamp)
 }
 
 /**
@@ -44,11 +46,11 @@ function writeFile(fileName, data = '', options = {}) {
     output = '', // 为空时默认存放路径为 files  D:\web\puppeteer\files
     encoding = 'utf8'
   } = options
-  log('output', output);
+  log('output', output)
   output = output ? path.resolve(output, fileName) : path.resolve(__dirname, '../../data', fileName)
   data = typeof data === 'string' ? data : JSON.stringify(data)
   
-  // content = content.replace(/\n\r/gi, '').replace(/\n/gi, '').replace(/\r/gi, '');
+  // content = content.replace(/\n\r/gi, '').replace(/\n/gi, '').replace(/\r/gi, '')
 
   return new Promise((resolve, reject) => {
     fs.writeFile(output, data, encoding, err => {
@@ -72,11 +74,11 @@ function writeFile(fileName, data = '', options = {}) {
 function readFile(fileName, { encoding = 'utf8' } = {}) {
   return new Promise(function (resolve, reject) {
     fs.readFile(fileName, { encoding}, function(error, data) {
-      if (error) return reject(error);
-      resolve(data);
-    });
-  });
-};
+      if (error) return reject(error)
+      resolve(data)
+    })
+  })
+}
 
 
 /**
@@ -146,11 +148,11 @@ const formatNumber = n => {
 function mkdirSync(dirName, pathName) {
   let output = path.resolve(pathName, dirName)
   if (fs.existsSync(output)) {
-    log('dir ' + output + ' exist');
+    log('dir ' + output + ' exist')
     return output
   }
   fs.mkdirSync(output)
-  log('mkdir '+ output +' success');
+  log('mkdir '+ output +' success')
   return output
 }
 
@@ -188,6 +190,29 @@ function type(obj) {
 }
 
 
+/**
+ * @description 保存已知url的images
+ * @param {String} url 图片url
+ * @param {String} dir 保存文件目录
+ * @param {String|Number} [name=Date.now()] 文件名
+ */
+function saveImage(url, dir, name=Date.now()) {
+  if ((/\.(jpg|png|gif|jpeg)$/.test(url))) {
+    const mod = /^https:/.test(url) ? https: http
+    const ext = path.extname(url) || '.webp'
+    const file = path.join(dir, `${name}${ext}`)
+    log(`${c.bgGreen('fetch')} ${url}`)
+
+    mod.get(url, (res)=> {
+      res.pipe(fs.createWriteStream(file))
+        .on('finish', () => {
+          log(file)
+        })
+    })
+  }
+}
+
+
 module.exports = {
   sleep,
   wait,
@@ -197,5 +222,6 @@ module.exports = {
   formatTime,
   mkdirSync,
   readDirFiles,
-  exists
+  exists,
+  saveImage
 }
