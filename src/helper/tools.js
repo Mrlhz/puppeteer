@@ -9,7 +9,6 @@ const log = console.log
 
 /**
  * @description 延迟
- *
  * @param {Number} delay
  * @returns
  * @example
@@ -23,7 +22,6 @@ async function sleep (delay) {
 
 /**
  * @description 延迟log
- *
  * @param {Number} timestamp
  * @param {Number} t
  * @param {boolean} [log=true]
@@ -36,7 +34,6 @@ async function wait(timestamp=3000, islog=true, t='') {
 
 /**
  * @description 异步保存文件，文件已存在则替换
- *
  * @param {String} fileName 文件名，包括文件类型
  * @param {String} data 
  * @param {Object} options
@@ -67,7 +64,6 @@ function writeFile(fileName, data = '', options = {}) {
 
 /**
  * @description 异步地读取文件的全部内容
- *
  * @param {String} fileName
  * @returns
  */
@@ -79,7 +75,6 @@ function readFile(fileName, { encoding = 'utf8' } = {}) {
     })
   })
 }
-
 
 /**
  * @description url拼接参数
@@ -112,10 +107,8 @@ function serializedParams(url, options = {}) {
   return url + '?' + params.join('&')
 }
 
-
 /**
  * @description 时间
- *
  * @param {Date} date
  * @returns
  * @example
@@ -138,7 +131,6 @@ const formatNumber = n => {
   return n[1] ? n : '0' + n
 }
 
-
 /**
  * @description 创建文件，返回文件夹绝对路径
  * @param {String} dirName new dir name
@@ -158,13 +150,12 @@ function mkdirSync(dirName, pathName) {
 
 /**
  * @description 读取目录的内容
- *
  * @param { String | Buffer | URL } dir A path to a file. If a URL is provided, it must use the file:protocol.
  * @param { Object } [options={}] The encoding (or an object specifying the encoding), used as the encoding of the result. If not provided, 'utf8' is used.
  * @returns 
  */
 function readDirFiles(dir, options={}) {
-  let { withFileTypes= false, encoding = 'utf8' } = options
+  let { withFileTypes = false, encoding = 'utf8' } = options
   return new Promise((resolve, reject) => {
     fs.readdir(dir, {withFileTypes, encoding},(err, files) => {
       if (err) reject(err)
@@ -175,7 +166,6 @@ function readDirFiles(dir, options={}) {
 
 /**
  * @description A path to a file or directory
- *
  * @param {PathLike} path
  * @returns {Boolean}
  */
@@ -189,7 +179,6 @@ function type(obj) {
   return typeStr.substring(8, length - 1)
 }
 
-
 /**
  * @description 保存已知url的images
  * @param {String} url 图片url
@@ -197,7 +186,7 @@ function type(obj) {
  * @param {String|Number} [name=Date.now()] 文件名
  */
 function saveImage(url, dir, name=Date.now()) {
-  if ((/\.(jpg|png|gif|jpeg)$/.test(url))) {
+  if ((/\.(jpg|png|gif|jpeg|webp)$/.test(url))) {
     const mod = /^https:/.test(url) ? https: http
     const ext = path.extname(url) || '.webp'
     const file = path.join(dir, `${name}${ext}`)
@@ -212,6 +201,24 @@ function saveImage(url, dir, name=Date.now()) {
   }
 }
 
+/**
+ * @description 补零
+ * @param {Number|String} input
+ * @param {Number} n
+ * @returns {String}
+ * @example
+ * padzeros(9, 4) // 0009
+ */
+function padzeros(input = '', n = 2) {
+  const str = typeof input === 'string' ? input : input.toString()
+  const strLen = str.length
+  const template = '0'.repeat(32)
+
+  if (strLen !== n) {
+    return template.substring(0, n - strLen) + str
+  }
+  return str
+}
 
 module.exports = {
   sleep,
@@ -223,5 +230,6 @@ module.exports = {
   mkdirSync,
   readDirFiles,
   exists,
-  saveImage
+  saveImage,
+  padzeros
 }
