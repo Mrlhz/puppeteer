@@ -36,7 +36,7 @@ async function getMovieDetailsHtml(page) {
           const value = item.substring(index + 1).trim()
 
           if (key && obj[key]) {
-            if (key === '导演' || key === '编剧' || key === '类型' || key === '上映日期' || key === '又名') {
+            if (key === '导演' || key === '编剧' || key === '类型' || key === '上映日期' || key === '又名' || key === '语言') {
               res[obj[key]] = value.split(' / ')
             } else if (key === 'IMDb链接') {
               res[obj[key]] = 'http://www.imdb.com/title/' + value
@@ -72,7 +72,7 @@ async function getMovieDetailsHtml(page) {
       res.rating_people = rating_people ? Number(rating_people.innerText) : ''; // 评价人数
       res.rating = rating_num ? Number(rating_num.innerText) : ''; // 评价人数
       res.comments_count = comments_count.innerText ? '' : '';
-      res.summary = summary ? summary.innerText.replace('\n\n举报','').trim() : ''; // 内容简介
+      res.summary = summary ? summary.innerText.replace('\n\n举报','') : ''; // 内容简介
       res.actors = actors
       // getHtml end
       return res

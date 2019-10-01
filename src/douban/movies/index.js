@@ -1,5 +1,7 @@
+const path = require('path')
 
-const { books_mdn_data } = require('../../config/index')
+const { books_mdn_data, movie_dir } = require('../../config/index')
+const { writeFile } = require('../../helper/tools')
 
 const { getMovieDetails } = require('./getMovieDetails')
 
@@ -30,6 +32,14 @@ console.log(urls.length)
 //   output: books_mdn_data // 存放路径，output下应有temp文件夹
 // })
 
+// 豆瓣电影 Top 250
+const { subject } = require(path.join(movie_dir, '豆瓣电影 Top 250.json'))
+const top250Urls = subject.map((item) => item.url);
+// getMovieDetails(top250Urls, {
+//   delay: 5000,
+//   type: 'Top 250',
+//   output: movie_dir
+// })
 
 /**
  * `测试`
@@ -39,3 +49,31 @@ console.log(urls.length)
 //   type: '页面不存在',
 //   output: books_mdn_data // 存放路径
 // })
+
+const { subjects } = require(path.join(movie_dir, 'top2501.json'))
+const { s } = require(path.join(movie_dir, 'Top 250-details.json'))
+
+function test() {
+  console.time('time')
+  const res = subjects.map((item, index) => {
+    if(item.summary.indexOf('展开全部') !== -1) {
+      console.log(index, item.title)
+      item = s.find((ele) => ele.id === item.id)
+    }
+
+    return item
+  })
+
+  const result = {
+    type: 'Top 250',
+    total: res.length,
+    subjects: res
+  }
+  
+  writeFile('top250.json', result, {
+    output: movie_dir
+  })
+  console.timeEnd('time')
+}
+
+test()

@@ -3,7 +3,7 @@ const path = require('path')
 const c = require('ansi-colors')
 
 const { proxyServer } = require('../../config/ip')
-const { wait, writeFile, exists } = require('../../helper/tools')
+const { wait, writeFile, exists, mkdirSync } = require('../../helper/tools')
 const { Browser } = require('../../helper/browser')
 const { getMovieDetailsHtml } = require('./html/getMovieDetailsHtml')
 
@@ -27,8 +27,10 @@ async function getMovieDetails(urls, options = {}) {
   for (let i = 0; i < len; i++) {
     const page = await instance.goto(urls[i]) // 'proxy'
     console.log('title', await page.title())
-    let click = await page.$('.more-actor') // 更多主演
+    const click = await page.$('.more-actor') // 更多主演
+    const show_full = await page.$('.j.a_show_full') // 更多主演j a_show_full
     if(click) await page.click('.more-actor')
+    if(show_full) await page.click('.j.a_show_full')
     try {
       const item = await getMovieDetailsHtml(page)
       if(item.errMsg) {
@@ -66,8 +68,10 @@ async function getMovieDetails(urls, options = {}) {
  * @param {String} output 存放路径
  */
 function haveOneSave(item, name, output) {
+  const p = path.join(output, 'temp')
+  const dir = exists(p) ? p : mkdirSync('temp', output)
   writeFile(name + '-m.json', item, {
-    output: path.resolve(output, 'temp')
+    output: dir
   })
 }
 
