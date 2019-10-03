@@ -30,7 +30,9 @@ async function getBasicList(api_name, params) {
     fields,
     items
   }
-  await writeFile(api_name + '.json', result, {
+  await writeFile({
+    fileName: api_name + '.json',
+    data: result,
     output: path.resolve(__dirname, '../data/tushare')
   })
 }

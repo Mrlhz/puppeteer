@@ -38,7 +38,9 @@ async function html2markdown(dir) {
     const markdown = turndownService.turndown(txt)
 
     const md = value + '.md'
-    await writeFile(md, markdown, {
+    await writeFile({
+      fileName: md,
+      data: markdown,
       output: path.resolve(dir)
     })
   })

@@ -70,7 +70,9 @@ function test() {
     subjects: res
   }
   
-  writeFile('top250.json', result, {
+  writeFile({
+    fileName: 'top250.json',
+    data: result,
     output: movie_dir
   })
   console.timeEnd('time')

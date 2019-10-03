@@ -56,7 +56,9 @@ async function getMovieAndTvByTag(urls, options) {
     msg: '数据来源于网络整理，仅供学习。',
     subjects: list
   }
-  writeFile(tag + '.min.json', result, {
+  writeFile({
+    fileName: tag + '.min.json',
+    data: result,
     output
   })
   await instance.close()

@@ -50,7 +50,9 @@ async function getBookDetails(urls, options = {}) {
     total: items.length,
     subjects: items
   }
-  writeFile(fileName + '.json', result, {
+  writeFile({
+    fileName: fileName + '.json',
+    data: result,
     output
   })
   
@@ -65,8 +67,9 @@ async function getBookDetails(urls, options = {}) {
  * @param {String} output 存放路径
  */
 function haveOneSave(item, name, output) {
-  console.log(output, 66);
-  writeFile(name + '-b.json', item, {
+  writeFile({
+    fileName: name + '-b.json',
+    data: item,
     output: path.resolve(output, 'temp')
   })
 }

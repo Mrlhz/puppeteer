@@ -5,6 +5,7 @@
 - [puppeteer 中文文档](https://zhaoqize.github.io/puppeteer-api-zh_CN)
 - [爬虫利器 Puppeteer 实战](https://www.jianshu.com/p/a9a55c03f768)
 - [puppeteer-cn](https://npm.taobao.org/package/puppeteer-cn)
+- [awesome-puppeteer](https://github.com/transitive-bullshit/awesome-puppeteer/blob/master/readme.zh.md)
 
 
 ### 安装 Puppeteer

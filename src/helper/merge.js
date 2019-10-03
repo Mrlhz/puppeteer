@@ -30,7 +30,9 @@ async function mergeFiles(baseDir, outputDir = '', name = Date.now()) {
   }
 
   console.log(lists.length)
-  await writeFile(name + '-all.json', result, {
+  await writeFile({
+    fileName: name + '-all.json',
+    data: result,
     output: outputDir
   })
 }
@@ -64,7 +66,9 @@ function merge(name, options = {}) {
     total: items.length,
     subjects: items
   }
-  writeFile(name + '-details.json', result, {
+  writeFile({
+    fileName: name + '-details.json',
+    data: result,
     output: temp
   })
 }

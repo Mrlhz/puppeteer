@@ -14,9 +14,13 @@ async function getProvince(url) {
 
   let list = await getProvinceHtml(page)
 
-  writeFile('province.min.json', list, {
+  writeFile({
+    fileName: 'province.min.json',
+    data: list,
     output: path.resolve(__dirname, '../../data/area')
   })
+
+  
 
   await browser.close()
 

@@ -53,10 +53,11 @@ async function getMovieDetails(urls, options = {}) {
     total: items.length,
     subjects: items
   }
-  writeFile(fileName + '.json', result, {
+  writeFile({
+    fileName: fileName + '.json',
+    data: result,
     output
   })
-  
   await instance.close()
   console.timeEnd('time')
 }

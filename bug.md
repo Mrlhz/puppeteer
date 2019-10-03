@@ -71,3 +71,40 @@ SSL 证书被用作加载资源
 对于同时支持HTTPS和HTTP的资源，引用的时候要把引用资源的URL里的协议头去掉，浏览器会自动根据当前是HTTPS还是HTTP来给资源URL补上协议头的，可以达到无缝切换。
 方法2：iframe方式
 使用iframe的方式引入HTTP资源，然后将这个页面嵌入到HTTPS页面里就可以了
+
+
+
+### 遇到的错误
+
+- Error: net::ERR_EMPTY_RESPONSE
+
+```js
+Error: net::ERR_EMPTY_RESPONSE at https://book.douban.com/subject/1883245/
+    at navigate (D:\web\myblog\puppeteer\node_modules\puppeteer\lib\FrameManager.js:121:37)
+    at process._tickCallback (internal/process/next_tick.js:68:7)
+  -- ASYNC --
+    at Frame.<anonymous> (D:\web\myblog\puppeteer\node_modules\puppeteer\lib\helper.js:111:15)
+    at Page.goto (D:\web\myblog\puppeteer\node_modules\puppeteer\lib\Page.js:674:49)
+    at Page.<anonymous> (D:\web\myblog\puppeteer\node_modules\puppeteer\lib\helper.js:112:23)
+    at Browser.goto (D:\web\myblog\puppeteer\src\douban\browser.js:36:18)
+    at process._tickCallback (internal/process/next_tick.js:68:7)
+```
+
+
+- `Uncaught TypeError: Converting circular structure to JSON`
+
+- [TypeError: Converting circular structure to JSON](https://stackoverflow.com/questions/4816099/chrome-sendrequest-error-typeerror-converting-circular-structure-to-json)
+- [JSON.stringify出现 “Converting circular structure to JSON”](https://www.oecom.cn/json-stringify-error/)
+
+> 对象中存在循环引用
+
+```js
+var a = {};
+a.b = a;// 循环引用
+// var data = data.data.fields 
+```
+
+use [json-stringify-safe](https://www.npmjs.com/package/json-stringify-safe)
+
+
+- `Error: Execution context was destroyed, most likely because of a navigation.`

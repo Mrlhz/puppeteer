@@ -44,7 +44,9 @@ async function getBookListByTag(urls, options = {}) {
     subjects: items
   }
 
-  writeFile(tag + '-simple.json', result, {
+  writeFile({
+    fileName: tag + '-simple.json',
+    data: result,
     output: books_mdn_data
   })
   
@@ -60,7 +62,7 @@ module.exports = {
 /**
  * `测试`
  */
-const tag = '诗词'
+const tag = '漫画'
 const types = ['T', 'R', 'S'] // type[综合排序 T  |  按出版日期排序 R |  按评价排序 S]
 const typeNames = ['综合排序', '按出版日期排序', '按评价排序']
 
@@ -75,7 +77,7 @@ const urls = formatUrls('https://book.douban.com/tag/%s?start=%s&type=%s', {
 // console.log(urls);
 
 getBookListByTag(urls, {
-  delay: 5000,
+  delay: 3500,
   tag,
   typeName: typeNames[0]
 })

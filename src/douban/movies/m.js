@@ -74,7 +74,9 @@ async function fetchSubjects(urlPath, options) {
     start: `[${start},${start + result.length}]`
   })
   console.log(c.bold.red('result') + ': ' + c.bold.yellow(result.length) + '')
-  writeFile(fileName, result, {
+  writeFile({
+    fileName,
+    data: result,
     output: temp
   })
 

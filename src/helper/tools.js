@@ -34,16 +34,17 @@ async function wait(timestamp=3000, islog=true, t='') {
 
 /**
  * @description 异步保存文件，文件已存在则替换
- * @param {String} fileName 文件名，包括文件类型
- * @param {String} data 
- * @param {Object} options
+ * @param {Object} [options={fileName, data, output}] fileName, data, output, encoding
+ * @returns
  */
-function writeFile(fileName, data = '', options = {}) {
+function writeFile(options = {}) {
   let {
-    output = '', // 为空时默认存放路径为 files  D:\web\puppeteer\files
+    fileName = '未命名' + Date.now(),
+    data = '',
+    output = '', // 为空时默认存放路径为 data  D:/.../puppeteer/data
     encoding = 'utf8'
   } = options
-  log('output', output)
+  // log('output', output)
   output = output ? path.resolve(output, fileName) : path.resolve(__dirname, '../../data', fileName)
   data = typeof data === 'string' ? data : JSON.stringify(data)
   
@@ -204,7 +205,7 @@ function saveImage(url, dir, name=Date.now()) {
 /**
  * @description 补零
  * @param {Number|String} input
- * @param {Number} n
+ * @param {Number} n a number padded with zeros
  * @returns {String}
  * @example
  * padzeros(9, 4) // 0009

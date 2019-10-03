@@ -82,17 +82,23 @@ async function index(urls, options) {
     })
     await sleep(3000 + i * 600)
     result.push(...list)
-    writeFile(names[i] + '.json', list, {
+    writeFile({
+      fileName: names[i] + '.json',
+      data: list,
       output
     })
   }
 
-  writeFile(province + '-errs.json', errs, {
+  writeFile({
+    fileName: province + '-errs.json',
+    data: errs,
     output
   })
   await browser.close()
   console.log(result.length)
-  writeFile(province + '-result.json', result, {
+  writeFile({
+    fileName: province + '-result.json',
+    data: result,
     output
   })
   console.timeEnd('start')

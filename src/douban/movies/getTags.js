@@ -25,7 +25,9 @@ async function index(params) {
     acc[cur] = tags[index]
     return acc
   }, {})
-  writeFile('tags.json', result, {
+  writeFile({
+    fileName: 'tags.json',
+    data: result,
     output: movie_dir
   })
 }

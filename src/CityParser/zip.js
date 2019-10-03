@@ -15,7 +15,9 @@ function zip(data, name) {
 
   console.log(data.length)
 
-  writeFile(name + '.min.json', data, {
+  writeFile({
+    fileName: name + '.min.json',
+    data,
     output: path.resolve(__dirname, './data')
   })
   console.timeEnd('time')

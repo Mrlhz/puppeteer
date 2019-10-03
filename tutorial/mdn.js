@@ -23,7 +23,9 @@ async function main(url, topic = '快速入门') {
   await sleep(300)
   const result = await getTargetPageHtml(page, topic)
 
-  writeFile(topic + '.json', result, {
+  writeFile({
+    fileName: topic + '.json',
+    data: result,
     output: mdn
   })
   await browser.close()
@@ -57,6 +59,7 @@ async function getTargetPageHtml(page, topic) {
 }
 
 main('https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects', '语句和声明')
+// main('https://avmask.com/cn/series/09a7cf2dd7d271a4')
 
 const u = require(path.resolve(mdn, 'Global_Objects_urls.json'))
 // console.log(u)

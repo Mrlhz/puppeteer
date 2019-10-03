@@ -36,7 +36,9 @@ async function getTop250List(options) {
     subject: items
   }
 
-  writeFile(title + '.json', result, {
+  writeFile({
+    fileName: title + '.json',
+    data: result,
     output: movie_dir
   })
   await browser.close()

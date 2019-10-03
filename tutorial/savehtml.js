@@ -13,14 +13,6 @@ const { executablePath } = require('@config/index')
 async function saveHtml(urls, handleHtmlFunc, selector, output, titles = []) {
   console.time('time')
   let len = urls.length
-  // for (let i = 0; i < len; i++) {
-  //   let html = await axios.get(urls[i])
-  //   writeFile(i + '.html', html.data,{
-  //     output: 'D:/books/mdn/html'
-  //   })
-  //   await sleep(3000)
-  // }
-
   const browser = await puppeteer.launch({
     headless: true,
     executablePath
@@ -50,7 +42,9 @@ async function saveHtml(urls, handleHtmlFunc, selector, output, titles = []) {
       }
 
       const result = await handleHtmlFunc(page, selector)
-      writeFile(title + '.html', result, {
+      writeFile({
+        fileName: title + '.html',
+        data: result,
         output
       })
 
@@ -130,7 +124,9 @@ async function getSomeFiles(urls, handleHtmlFunc, file) {
       console.log(e)
     }
   }
-  writeFile(file, items, {
+  writeFile({
+    fileName: file,
+    data: items,
     output: path.resolve(__dirname)
   })
 
@@ -142,8 +138,8 @@ async function getSomeFiles(urls, handleHtmlFunc, file) {
 /**
  * `bug css样式丢失`
  */
-const urls = ['https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array']
-saveHtml(urls, getSelectorPage, '#wikiArticle', 'D:/books/mdn/html')
+// const urls = ['https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array']
+// saveHtml(urls, getSelectorPage, '#wikiArticle', 'D:/books/mdn/html')
 
 /**
  * 1. run getTrainVueInfoUrls
@@ -162,3 +158,35 @@ saveHtml(urls, getSelectorPage, '#wikiArticle', 'D:/books/mdn/html')
 // const titles = urls.map((item) => item.title)
 // urls = urls.map((item) => item.url)
 // saveHtml(urls, getSelectorPage, '.content.markdown-body', 'D:/books/mdn/html/ahead', titles)
+
+
+function getUrlParams(sUrl, sKey) {
+  if (!sUrl) return {}
+
+  const index = sUrl.indexOf('?')
+  if (index !== -1) sUrl = sUrl.substring(index + 1)
+  
+  const hashIndex = sUrl.indexOf('#')
+  if (hashIndex !== -1) sUrl = sUrl.substring(0, hashIndex)
+
+  const params = {}
+  decodeURIComponent(sUrl).split('&').forEach((param) => {
+    const [key, value] = param.split('=')
+    if (!params[key]) {
+      params[key] = value
+    } else {
+      params[key] = Array.isArray(params[key]) ? params[key] : [params[key]]
+      params[key].push(value)
+    }
+  })
+
+  if (sKey && params[sKey]) {
+    return params[sKey]
+  }
+  return params
+}
+
+// getUrlParams('http://www.nowcoder.com?key=1&key=2&key=3&test=4#hehe')
+// getUrlParams('https://www.baidu.com/s?ie=UTF-8&wd=%E5%88%98%E4%BA%A6%E8%8F%B2')
+getUrlParams('https://cli.vuejs.org/zh/guide/cli-service.html#使用命令')
+getUrlParams('https://translate.google.cn/#view=home&op=translate&sl=auto&tl=en&text=原始url')
