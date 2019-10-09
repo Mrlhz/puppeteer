@@ -1,3 +1,4 @@
+const fs = require('fs')
 const path = require('path')
 
 const puppeteer = require('puppeteer')
@@ -13,28 +14,12 @@ const { executablePath } = require('@config/index')
 async function saveHtml(urls, handleHtmlFunc, selector, output, titles = []) {
   console.time('time')
   let len = urls.length
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath
-  })
+  const browser = new Browser({ headless: true })
 
   for (let i = 0; i < len; i++) {
-    const page = await browser.newPage()
-
-    await page.setViewport({
-      width: 1920,
-      height: 1200
-    })
+    const page = await browser.goto(urls[i])
 
     try {
-      console.log(`${c.green('fetch')} ${urls[i]}`)
-      await page.goto(urls[i], {
-        timeout: 0,
-        waitUntil: 'networkidle2' // 当至少500毫秒的网络连接不超过2个时，考虑导航已经完成
-      })
-
-      await sleep(3000)
-      // await page.emulateMedia('screen')
       let title = titles[i]
       if(!title) {
         title = await page.title()
@@ -51,7 +36,6 @@ async function saveHtml(urls, handleHtmlFunc, selector, output, titles = []) {
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
 
       await sleep(2000)
-
       await page.close()
     } catch (e) {
       console.log(e)
@@ -101,6 +85,8 @@ async function getAheadUrls(page) {
 
 async function getSelectorPage(page, selector) {
   return await page.evaluate((selector) => {
+    const ignore = document.querySelector('.copyright')
+    ignore ? ignore.innerHTML = '' : ''
     const content = document.querySelector(selector)
     return content ? content.innerHTML : ''
   }, selector)
@@ -138,55 +124,40 @@ async function getSomeFiles(urls, handleHtmlFunc, file) {
 /**
  * `bug css样式丢失`
  */
-// const urls = ['https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array']
-// saveHtml(urls, getSelectorPage, '#wikiArticle', 'D:/books/mdn/html')
 
-/**
- * 1. run getTrainVueInfoUrls
- * 2. `http://www.zhufengpeixun.cn/train/vue-info/component.html`
- */
-// getSomeFiles(['http://www.zhufengpeixun.cn/train/vue-info/component.html'], getTrainVueInfoUrls, 'train-vue-info-urls.json')
-// const urls = require('./train-vue-info-urls.json')
-// saveHtml(urls.slice(0, 1), getTrainVueInfoPage, 'main.page', 'D:/books/mdn/html/train-vue-info')
-
-/**
- * `http://www.zhufengpeixun.cn/ahead/index.html`
- */
-// getSomeFiles(['http://www.zhufengpeixun.cn/ahead/index.html'], getAheadUrls, 'ahead-urls.json')
-
-// let urls = require('./ahead-urls.json')
-// const titles = urls.map((item) => item.title)
-// urls = urls.map((item) => item.url)
-// saveHtml(urls, getSelectorPage, '.content.markdown-body', 'D:/books/mdn/html/ahead', titles)
-
-
-function getUrlParams(sUrl, sKey) {
-  if (!sUrl) return {}
-
-  const index = sUrl.indexOf('?')
-  if (index !== -1) sUrl = sUrl.substring(index + 1)
-  
-  const hashIndex = sUrl.indexOf('#')
-  if (hashIndex !== -1) sUrl = sUrl.substring(0, hashIndex)
-
-  const params = {}
-  decodeURIComponent(sUrl).split('&').forEach((param) => {
-    const [key, value] = param.split('=')
-    if (!params[key]) {
-      params[key] = value
-    } else {
-      params[key] = Array.isArray(params[key]) ? params[key] : [params[key]]
-      params[key].push(value)
-    }
-  })
-
-  if (sKey && params[sKey]) {
-    return params[sKey]
-  }
-  return params
+function runMDN() {
+  const urls = ['https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise']
+  saveHtml(urls, getSelectorPage, '#wikiArticle', 'D:/books/mdn/html')
 }
 
-// getUrlParams('http://www.nowcoder.com?key=1&key=2&key=3&test=4#hehe')
-// getUrlParams('https://www.baidu.com/s?ie=UTF-8&wd=%E5%88%98%E4%BA%A6%E8%8F%B2')
-getUrlParams('https://cli.vuejs.org/zh/guide/cli-service.html#使用命令')
-getUrlParams('https://translate.google.cn/#view=home&op=translate&sl=auto&tl=en&text=原始url')
+
+function runTrain() {
+  /**
+   * 1. run getTrainVueInfoUrls
+   * 2. `http://www.zhufengpeixun.cn/train/vue-info/component.html` 珠峰架构课 - Vue.js顶尖高手特训营
+   */
+  getSomeFiles(['http://www.zhufengpeixun.cn/train/vue-info/component.html'], getTrainVueInfoUrls, 'train-vue-info-urls.json')
+  const urls = require('./train-vue-info-urls.json')
+  saveHtml(urls.slice(0, 1), getTrainVueInfoPage, 'main.page', 'D:/books/mdn/html/train-vue-info')
+}
+
+function runAhead(files) {
+  /**
+   * `http://www.zhufengpeixun.cn/ahead/index.html` 珠峰架构师成长计划
+   */
+  const filePath = path.resolve(__dirname, `./${files}`)
+  if (!fs.existsSync(filePath)) {
+    getSomeFiles(['http://www.zhufengpeixun.cn/ahead/index.html'], getAheadUrls, `${files}`)
+  }
+
+  let urls = require(`./${files}`)
+  const titles = urls.map((item) => item.title)
+  urls = urls.map((item) => item.url)
+  saveHtml(urls, getSelectorPage, '.content.markdown-body', 'D:/books/mdn/html/ahead/html', titles)
+  // saveHtml(['http://www.zhufengpeixun.cn/ahead/html/76.react_optimize.html'], getSelectorPage, '.content.markdown-body', 'D:/books/mdn/html/ahead', ['76.react_optimize'])
+
+}
+
+// runMDN()
+// runTrain()
+// runAhead('ahead-urls.json')

@@ -38,12 +38,8 @@ async function wait(timestamp=3000, islog=true, t='') {
  * @returns
  */
 function writeFile(options = {}) {
-  let {
-    fileName = '未命名' + Date.now(),
-    data = '',
-    output = '', // 为空时默认存放路径为 data  D:/.../puppeteer/data
-    encoding = 'utf8'
-  } = options
+  // output为空时默认存放路径为 data  D:/.../puppeteer/data 
+  let { fileName = '未命名' + Date.now(), data = '', output = '.', encoding = 'utf8' } = options
   // log('output', output)
   output = output ? path.resolve(output, fileName) : path.resolve(__dirname, '../../data', fileName)
   data = typeof data === 'string' ? data : JSON.stringify(data)
