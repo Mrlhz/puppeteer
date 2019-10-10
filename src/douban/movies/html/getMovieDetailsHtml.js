@@ -71,9 +71,10 @@ async function getMovieDetailsHtml(page) {
       };
       res.rating_people = rating_people ? Number(rating_people.innerText) : ''; // 评价人数
       res.rating = rating_num ? Number(rating_num.innerText) : ''; // 评价人数
-      res.comments_count = comments_count.innerText ? '' : '';
+      res.comments_count = comments_count.innerText ? Number(comments_count.innerText.replace(/[全部|条]/g, '')) : '';
       res.summary = summary ? summary.innerText.replace('\n\n举报','') : ''; // 内容简介
       res.actors = actors
+      res.top250 = document.querySelector('.top250-no') ? 0 : 1
       // getHtml end
       return res
     })

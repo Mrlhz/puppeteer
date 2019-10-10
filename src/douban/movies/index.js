@@ -50,11 +50,17 @@ const top250Urls = subject.map((item) => item.url);
 //   output: books_mdn_data // 存放路径
 // })
 
-const { subjects } = require(path.join(movie_dir, 'top2501.json'))
-const { s } = require(path.join(movie_dir, 'Top 250-details.json'))
+getMovieDetails(['https://movie.douban.com/subject/1307739/'], {
+  delay: 0,
+  type: '90年代',
+  output: movie_dir // 存放路径
+})
+
 
 function test() {
   console.time('time')
+  const { subjects } = require(path.join(movie_dir, 'top2501.json'))
+  const { s } = require(path.join(movie_dir, 'Top 250-details.json'))
   const res = subjects.map((item, index) => {
     if(item.summary.indexOf('展开全部') !== -1) {
       console.log(index, item.title)
@@ -78,4 +84,4 @@ function test() {
   console.timeEnd('time')
 }
 
-test()
+// test()

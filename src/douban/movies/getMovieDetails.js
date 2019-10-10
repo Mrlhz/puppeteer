@@ -7,6 +7,7 @@ const { wait, writeFile, exists, mkdirSync } = require('../../helper/tools')
 const { Browser } = require('../../helper/browser')
 const { getMovieDetailsHtml } = require('./html/getMovieDetailsHtml')
 
+const { insertOne } = require('../../mongo/index')
 /**
  * @description 获取豆瓣电影简介 e.g. `https://movie.douban.com/subject/1307914/`
  *
@@ -28,7 +29,7 @@ async function getMovieDetails(urls, options = {}) {
     const page = await instance.goto(urls[i]) // 'proxy'
     console.log('title', await page.title())
     const click = await page.$('.more-actor') // 更多主演
-    const show_full = await page.$('.j.a_show_full') // 更多主演j a_show_full
+    const show_full = await page.$('.j.a_show_full') // 展开j a_show_full
     if(click) await page.click('.more-actor')
     if(show_full) await page.click('.j.a_show_full')
     try {
@@ -38,7 +39,8 @@ async function getMovieDetails(urls, options = {}) {
         continue
       }
       items.push(item)
-      haveOneSave(item, i, output)
+      // haveOneSave(item, i, output)
+      await insertOne(item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {
       console.log(e)

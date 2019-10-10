@@ -9,6 +9,44 @@ const mongoose = require('mongoose')
 const { Schema, model } = mongoose
 
 const movieSchema = new Schema({
+  url: String,
+  directors: { // 导演
+    type: [{
+      type: String
+    }]
+  },
+  screenwriter: {// 编剧
+    type: [{
+      type: String
+    }]
+  },
+  genres: {// 类型
+    type: [{
+      type: String
+    }]
+  },
+  countries: { // 制片国家/地区
+    type: [{
+      type: String
+    }]
+  },
+  language: {
+    type: [{
+      type: String
+    }]
+  },
+  initial_release_date: { // 上映日期
+    type: [{
+      type: String
+    }]
+  },
+  runtime: String,
+  original_title: {
+    type: [{
+      type: String
+    }]
+  },
+  imdb: String,
   id: {
     type: Number,
     required: true
@@ -17,54 +55,27 @@ const movieSchema = new Schema({
     type: String,
     required: true
   },
-  original_title: String,
-  rating: {
-    type: {
-      average: Number,
-      max: Number,
-      min: Number,
-      stars: String
-    }
-  },
-  casts: {
-    type: [{
-      name: String,
-      avatars: {
-        large: String
-      }
-    }]
-  },
-  comments_count: Number,
-  countries: { // 地区
-    type: [{
-      type: String
-    }]
-  },
-  directors: {
-    type: [{
-      name: String,
-      avatars: {
-        large: String
-      }
-    }]
-  }, // 导演
-  genres: {
-    type: [{
-      type: String
-    }]
-  }, // 类型
+  year: Number,
+  image: String,
   images: {
     type: {
-      large: String
+      more: String
     }
   },
-  reviews_count: Number,
-  summary: {
-    type: String,
-    default: ''
+  rating_people: Number,
+  rating: Number,
+  comments_count: Number,
+  summary: String,
+  actors: {// 主演
+    type: [{
+      name: String,
+      url: String
+    }]
   },
-  wish_count: Number,
-  year: Number
+  top250: {
+    type: Number,
+    default: 1
+  }
 })
 
 
