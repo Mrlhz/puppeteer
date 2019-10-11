@@ -63,3 +63,33 @@ typings/
 yarn.lock
 
 hn.js
+
+src/CityParser/data
+
+# http proxy
+src/config/ip.js
+
+# tushare token
+src/config/tushare.js
+
+province.json
+
+mddir.js
+test.js
+ahead-urls.json
+train-vue-info-urls.json
+
+
+# weibo
+weibo.js
+
+src/mask
+
+bt.md
+
+# todo
+src/douban/photos
+src/weibo
+src/bilibili
+test
+.eslintrc

@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const doubanDb = 'mongodb://localhost/douban'
 const Movie = require('../models/movie')
-const Brief = require('../models/brief')
+const movieBrief = require('../models/movieBrief')
 
 const log = console.log
 

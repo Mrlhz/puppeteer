@@ -80,25 +80,15 @@ function readFile(fileName, { encoding = 'utf8' } = {}) {
  * @param {Object} [options={}]
  * @returns
  * @example
- * serializedParams('https://movie.douban.com/j/new_search_subjects', {
- * start: 0,
- * sort: 'S',
- * range: '6,10',
- * tags: '电影',
- * countries: '中国大陆'
- * })
  * // https://movie.douban.com/j/new_search_subjects?start=0&sort=S&range=6,10&tags=电影&countries=中国大陆
+ * // https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=电影&start=0&countries=中国香港&year_range=1990,1999
  */
 function serializedParams(url, options = {}) {
-  // let { sort='S', range='8,10', tags='', start=0, countries='' } = options
-  
-  // url = `${url}?sort=${sort}&range=${range}&tags=${tags}&start=${start}&countries=${countries}`
-
   let params = []
   for (let [key, value] of Object.entries(options)) {
-    if (value === void 0) value = ''
-    if (value === '') continue
-    params.push(`${key}=${value}`)
+    if (value || value === 0) {
+      params.push(`${key}=${value}`)
+    }
   }
 
   return url + '?' + params.join('&')

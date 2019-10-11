@@ -21,4 +21,4 @@ const BriefSchema = new Schema({
   }
 })
 
-module.exports = model('Brief', BriefSchema)
+module.exports = model('movieBrief', BriefSchema)
