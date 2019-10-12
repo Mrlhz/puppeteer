@@ -17,10 +17,12 @@ async function getBookListByTagHtml(page) {
           const rating_nums = li.querySelector('.star .rating_nums')
           const pub = li.querySelector('.info .pub')
           const img = li.querySelector('.pic a img')
-        
+          const url = a ? a.getAttribute('href') : ''
+          const id = url.match(/\/(\d+)\//) ? Number(url.match(/\/(\d+)\//)[1]) : ''
           return {
+            id,
             title: a ? a.getAttribute('title') : '',
-            url: a ? a.getAttribute('href') : '',
+            url,
             rating: rating_nums ? Number(rating_nums.innerText):'', // 评分.innerText
             publish: pub ? pub.innerText : '',
             image: img ? img.getAttribute('src') : '',

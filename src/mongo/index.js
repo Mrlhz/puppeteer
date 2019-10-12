@@ -1,8 +1,11 @@
+const c = require('ansi-colors')
 const mongoose = require('mongoose')
 
 const doubanDb = 'mongodb://localhost/douban'
 const Movie = require('../models/movie')
 const movieBrief = require('../models/movieBrief')
+const bookBrief = require('../models/bookBrief')
+const tvBrief = require('../models/tvBrief')
 
 const log = console.log
 
@@ -21,14 +24,14 @@ const db = mongoose.connection
 db.on('error', console.error.bind(console, 'MongoDB 连接错误：'))
 
 
-async function insertMany() {
-  const { subjects } = require('D:/web/myblog/puppeteer/data/movie/top250.json')
+async function insertMany(filePath, modal) {
+  const { subjects } = require(filePath)
   subjects.forEach((item) => {
-    if (!item.top250) {
-      item.top250 = 0
+    if (!item.id) {
+      item.id = Number(item.url.match(/\/(\d+)\//)[1])
     }
   })
-  await Movie.insertMany(subjects, function (err, docs) {
+  await modal.insertMany(subjects, function (err, docs) {
     if (err) {
       console.error(err);
     }
@@ -37,28 +40,29 @@ async function insertMany() {
 
 }
 
-// insertMany()
-async function insert(movies=[]) {
-  // const { subjects } = require('D:/web/myblog/puppeteer/data/movie/top250.json')
+// insertMany('D:/books/mdn/data/book-simple/外国名著-simple.json', bookBrief)
 
-  for (let i = 0; i < movies.length; i++) {
-    const movie = movies[i]
-    const m = await Movie.findOne({ id: movie.id })
-    if (!m) {
-      const res = await new Movie(movie).save()
-      log('success:', res.title)
-    }
+async function insert(files, modal) {
+
+  for (let i = 0; i < files.length; i++) {
+    const { subjects } = require('D:/web/myblog/puppeteer/data/tv/min/' + files[i] + '.min.json')
+      await modal.insertMany(subjects, (err, docs) => {
+        if (err) console.error(err)
+        log('success:', docs.length)
+    })
   }
 }
+
+// insert(["热门", "美剧", "英剧", "韩剧", "日剧", "国产剧", "港剧", "日本动画", "综艺", "纪录片"], tvBrief)
 
 async function insertOne(modal, list) {
   const m = await modal.findOne({ id: list.id })
   if (m) {
-    console.log(m);
-    log('fail:', list.id + ' existed')
+    // console.log(m);
+    log(`${c.red('fail')}: ${list.title}(${list.id}) existed`)
   } else {
     const res = await new modal(list).save()
-    log('insert success:', res.title)
+    log(c.green('insert success:'), res.title)
   }
 }
 

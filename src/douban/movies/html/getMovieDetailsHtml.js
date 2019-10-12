@@ -61,7 +61,7 @@ async function getMovieDetailsHtml(page) {
       const comments_count = document.querySelector('#comments-section h2 a') // 短评数
       const image = document.querySelector('a.nbgnbg img')
       const rating_people = document.querySelector('.rating_people span') // 评价人数
-      const id = location.href.split('subject/')[1]
+      const id = location.href.match(/\/(\d+)\//)[1] || location.href.split('subject/')[1]
       res.id = id ? Number(id.replace('/', '')) : ''; // https://book.douban.com/subject/[]/
       res.title = a ? a.innerText : ''; // 
       res.year = year ? Number( year.innerText.replace(/\(|\)/g, '') ) : '';
