@@ -3,12 +3,9 @@ const path = require('path')
 const puppeteer = require('puppeteer')
 const c = require('ansi-colors')
 
-const { sleep, mkdirSync, writeFile } = require('../src/helper/tools')
+const { sleep, writeFile } = require('../src/helper/tools')
 const { Browser } = require('../src/helper/browser')
 const { mdn } = require('../src/config/index')
-
-// 创建 mdn目录
-// mkdirSync(path.resolve(__dirname, '../data/mdn'))
 
 /**
  * @description 获取`JavaScript 相关主题`列表

@@ -8,7 +8,7 @@ require('module-alias/register')
 
 const { executablePath } = require('@config/index')
 
-const { sleep, mkdirSync, writeFile } = require('../src/helper/tools')
+const { sleep, writeFile } = require('../src/helper/tools')
 
 const { books_mdn } = require('../src/config/index')
 

@@ -21,6 +21,14 @@ const turndownService = new TurndownService({
 //   }
 // })
 
+// add ```js ```
+turndownService.addRule('pre', {
+  filter: ['pre'],
+  replacement: function (content, node) {
+    return '```js' + '\r\n' + content + '\r\n' + '```'
+  }
+})
+
 /**
  * @description 符合html string => markdown
  *
@@ -51,3 +59,6 @@ async function html2markdown(dir, output) {
 
 // html2markdown('D:/books/mdn/html/promise')
 // html2markdown('D:/books/mdn/html/ahead/html', 'D:/books/mdn/html/ahead/md')
+// html2markdown('D:/books/mdn/html/javascript基础教程/html', 'D:/books/mdn/html/javascript基础教程/md')
+
+// html2markdown('D:/books/mdn/html/test', 'D:/books/mdn/html/test')

@@ -7,11 +7,11 @@ const axios = require('axios')
 
 require('module-alias/register')
 
-const { sleep, mkdirSync, writeFile } = require('../src/helper/tools')
+const { sleep, writeFile } = require('../src/helper/tools')
 const { Browser } = require('../src/helper/browser')
 const { executablePath } = require('@config/index')
 
-async function saveHtml(urls, handleHtmlFunc, selector, output, titles = []) {
+async function saveHtml(urls, handleHtmlFunc, selector='', output, titles = []) {
   console.time('time')
   let len = urls.length
   const browser = new Browser({ headless: true })
@@ -23,9 +23,10 @@ async function saveHtml(urls, handleHtmlFunc, selector, output, titles = []) {
       let title = titles[i]
       if(!title) {
         title = await page.title()
-        title = (1 + i) + '-' + title.replace(/[\\\/\:\*\?\"\<\>\|]/g, '-')
+        title = (1 + i) + '-' + title
       }
 
+      title = title.replace(/[\\\/\:\*\?\"\<\>\|]/g, '-')
       const result = await handleHtmlFunc(page, selector)
       writeFile({
         fileName: title + '.html',
@@ -92,7 +93,19 @@ async function getSelectorPage(page, selector) {
   }, selector)
 }
 
-async function getSomeFiles(urls, handleHtmlFunc, file) {
+async function getJsBasePage(page) {
+  await page.click('#catalog-31 .name-link')
+  return await page.evaluate(() => {
+    return Array.from(document.querySelectorAll('.typo-catalog-detail li a[title]')).map((item) => {
+      return {
+        title: item.getAttribute('title'),
+        url: location.origin + item.getAttribute('href')
+      }
+    })
+  })
+}
+
+async function getSomeFiles(urls, handleHtmlFunc, file, output='') {
   let items = []
   const instance = new Browser({
     headless: false
@@ -113,13 +126,11 @@ async function getSomeFiles(urls, handleHtmlFunc, file) {
   writeFile({
     fileName: file,
     data: items,
-    output: path.resolve(__dirname)
+    output: output || __dirname
   })
 
   await instance.close()
 }
-
-// mkdirSync('D:/books/mdn/html')
 
 /**
  * `bug css样式丢失`
@@ -158,6 +169,27 @@ function runAhead(files) {
 
 }
 
+function runJsBase() {
+  const output = 'D:/books/mdn/html/javascript基础教程'
+  // getSomeFiles(['https://www.yuque.com/mabin/js_base'], getJsBasePage, 'urls.json', output)
+  const urls = require(path.join(output, 'urls.json'))
+  const titles = urls.map((item) => item.title)
+  const u = urls.map((item) => item.url)
+
+  let index = 0
+  const names = titles.map((item) => {
+    if(item[0] === '1') {
+      index+=1
+    }
+    return index + '-' + item
+  })
+  // saveHtml(u, getSelectorPage, '.yuque-doc-content', output, names)
+  saveHtml(['https://www.yuque.com/mabin/js_base/br48gb'], getSelectorPage, '.yuque-doc-content', output, ['12-3. 受控/非受控组件、React组件的生命周期'])
+  
+  console.log(names.length);
+}
+
 // runMDN()
 // runTrain()
 // runAhead('ahead-urls.json')
+runJsBase()
