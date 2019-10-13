@@ -119,20 +119,18 @@ const formatNumber = n => {
 }
 
 /**
- * @description 创建文件，返回文件夹绝对路径
- * @param {String} dirName new dir name
+ * @description 创建文件夹，返回文件夹绝对路径
  * @param {String} pathName  A path to a file. If a URL is provided, it must use the file: protocol.
  * @returns {String} path 
  */
-function mkdirSync(dirName, pathName) {
-  let output = path.resolve(pathName, dirName)
-  if (fs.existsSync(output)) {
-    log('dir ' + output + ' exist')
-    return output
+function mkdirSync(pathName) {
+  if (fs.existsSync(pathName)) {
+    log('dir ' + pathName + ' exist')
+    return pathName
   }
-  fs.mkdirSync(output)
-  log('mkdir '+ output +' success')
-  return output
+  fs.mkdirSync(pathName)
+  log('mkdir '+ pathName +' success')
+  return pathName
 }
 
 /**
@@ -173,7 +171,7 @@ function type(obj) {
  * @param {String|Number} [name=Date.now()] 文件名
  */
 function saveImage(url, dir, name=Date.now()) {
-  if ((/\.(jpg|png|gif|jpeg|webp)$/.test(url))) {
+  if (isImage(url)) {
     const mod = /^https:/.test(url) ? https: http
     const ext = path.extname(url) || '.webp'
     const file = path.join(dir, `${name}${ext}`)
@@ -186,6 +184,10 @@ function saveImage(url, dir, name=Date.now()) {
         })
     })
   }
+}
+
+function isImage(url) {
+  return /\.(jpg|png|gif|jpeg|webp)$/.test(url)
 }
 
 /**
@@ -218,5 +220,6 @@ module.exports = {
   readDirFiles,
   exists,
   saveImage,
+  isImage,
   padzeros
 }

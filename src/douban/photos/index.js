@@ -1,25 +1,26 @@
+const fs = require('fs')
 const path = require('path')
+const utils = require('util')
 
-const puppeteer = require('puppeteer')
 const c = require('ansi-colors')
+const sharp = require('D:/web/puppeteer/node_modules/sharp')
 
-const { executablePath } = require('../../config/index')
-const { wait, writeFile, saveImage, readDirFiles, mkdirSync } = require('../../helper/tools')
+const { Browser } = require('../../helper/browser')
+const { wait, writeFile, saveImage, isImage, readDirFiles, mkdirSync, exists } = require('../../helper/tools')
 const log = console.log
+
+const output = 'D:/Yui Aragaki'
 
 /**
  * @description 获取豆瓣影人图片
  * @param {object} options
  */
-async function getCelebrityPhotos(options = {}) {
-  const { urls, name, output = __dirname } = options
+async function getCelebrityPhotos({ urls=[], name }) {
   const items = []
-  const browser = await puppeteer.launch({ headless: false, executablePath })
   const len = urls.length
+  const browser = new Browser({})
   for (let i = 0; i < len; i++) {
-    const page = await browser.newPage()
-    await page.setViewport({ width: 1920, height: 1080 })
-    await page.goto(urls[i])
+    const page = await browser.goto(urls[i])
     try {
       const item = await page.evaluate(() => {
         return Array.from(document.querySelectorAll('.article .cover img')).map((item) => {
@@ -28,12 +29,14 @@ async function getCelebrityPhotos(options = {}) {
           const end = src.lastIndexOf('.')
           return {
             name: src ? src.substring(start + 1, end) : Date.now(),
-            url: src
+            url: src ? src.replace('/m/', '/l/') : '',
+            m: src
           }
         })
       })
 
       items.push(...item)
+      log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {
       log(c.red(e))
     }
@@ -47,56 +50,33 @@ async function getCelebrityPhotos(options = {}) {
     total: items.length,
     items
   }
-  writeFile(name + '.json', result, {
-    output
-  })
   await browser.close()
+  return result
 }
 
-
-const utils = require('util')
-// https://movie.douban.com/celebrity/1031173/photos/?type=C&start=0&sortby=like&size=a&subtype=a
-function getCelebrityPhotoUrls(options = {}) {
-  const { url, end } = options
+// https://movie.douban.com/celebrity/1275733/photos/?type=C&start=0&sortby=like&size=a&subtype=a
+function getCelebrityPhotoUrls({ celebrityId, end }) {
+  // sortby 按喜欢排序like · 按尺寸排序size · 按时间排序time
+  const url = 'https://movie.douban.com/celebrity/%s/photos/?type=C&start=%s&sortby=like&size=a&subtype=a'
   const urls = []
   for (let i = 0; i < end; i++) {
-    urls.push(utils.format(url, i * 30))
+    urls.push(utils.format(url, celebrityId, i * 30))
   }
   return urls
 }
 
-// [ 'https://movie.douban.com/celebrity/1031173/photos/?type=C&start=0&sortby=like&size=a&subtype=a',
-//   'https://movie.douban.com/celebrity/1031173/photos/?type=C&start=30&sortby=like&size=a&subtype=a',
-//   'https://movie.douban.com/celebrity/1031173/photos/?type=C&start=60&sortby=like&size=a&subtype=a',
-//   'https://movie.douban.com/celebrity/1031173/photos/?type=C&start=90&sortby=like&size=a&subtype=a',
-//   'https://movie.douban.com/celebrity/1031173/photos/?type=C&start=120&sortby=like&size=a&subtype=a' ]
-
-const urls = getCelebrityPhotoUrls({url: 'https://movie.douban.com/celebrity/1031173/photos/?type=C&start=%s&sortby=like&size=a&subtype=a', end: 5})
-// getCelebrityPhotos({
-//   urls,
-//   name: '平野绫 Aya Hirano'
-// })
-
-const { items } = require('./平野绫 Aya Hirano.json')
-
-const output = 'D:\\Yui Aragaki\\平野绫 Aya Hirano'
-
-
 async function getPicture(list, dir = __dirname) {
   const len = list.length
   for (let i = 0; i < len; i++) {
-    // const url = list[i].url.replace('/m/', '/l/')
-    const url = list[i].url.replace('ps.jpg', 'pl.jpg')
-
+    // const url = list[i].url.replace('ps.jpg', 'pl.jpg')
     // const dir = list[i].dir
+    const url = list[i].url
     const name = list[i].name
     await saveImage(url, dir, name)
     log(`done: ${i + 1}/${len}`)
     await wait(500)
   }
 }
-
-// getPicture(items, output)
 
 /**
  * @description 图片格式转化
@@ -108,18 +88,20 @@ async function getPicture(list, dir = __dirname) {
  * @returns
  */
 async function convertImage(options = {}) {
-  const { input, output, ext = 'png' } = options
-
+  let { input, output, ext = 'png' } = options
   const files = await readDirFiles(input)
+  output = exists(output) ? output : mkdirSync(output)
 
-  files.forEach(function (file) {
+  files.forEach( (file) => {
+    if (isImage(file)) {
+      const { name } = path.parse(file)
+      const pic = path.join(output, `${name}.${ext}`)
 
-    var name = file.split('.')[0] || 
-    sharp(`${input}/${file}`)
-      .toFile(`${output}/${name}.${ext}`, async function (err, info) {
-        if (err) console.log(err)
-        result.push(info)
-      })
+      sharp(`${input}/${file}`)
+        .toFile(pic, (err, info) => {
+          if (err) console.log(err)
+        })
+    }
 
     // A Promise is returned
     // sharp(`${input}/${file}`)
@@ -130,7 +112,44 @@ async function convertImage(options = {}) {
   })
 }
 
+/**
+ * 1. get picture src
+ * 2. download image
+ * 3. image webp convert to jpg || png
+ */
+async function index(options={}) {
+  const { name, celebrityId, end, immediately = false, delay = 3000 } = options
+  let dir = path.join(output, name)
+  let webp = path.join(dir, 'webp')
+  dir = exists(dir) ? dir : mkdirSync(dir)
+  webp = exists(webp) ? webp : mkdirSync(webp)
+
+  const urls = getCelebrityPhotoUrls({ celebrityId, end })
+  const data = await getCelebrityPhotos({ urls, name })
+  writeFile({fileName: name + '.json', data, output: dir})
+
+  if (immediately) {
+    await wait(delay)
+    getPicture(data.items, webp) // 2.
+  }
+}
+
+// 1.
+index({
+  name: '新垣结衣 Yui Aragaki',
+  celebrityId: '1018562',
+  end: 69,
+  immediately: true,
+  delay: 1500
+})
+
+// 2. 
+// const { items } = require(path.join(output, '桥本爱 Ai Hashimoto', '桥本爱 Ai Hashimoto.json'))
+// getPicture(items, path.join(output, '桥本爱 Ai Hashimoto'))
+
+// 3.
 // convertImage({
-//   input: 'D:\\Yui Aragaki\\平野绫',
-//   output: 'D:\\Yui Aragaki\\平野绫 Aya Hirano',
+//   input: 'D:/Yui Aragaki/桥本爱 Ai Hashimoto/webp',
+//   output: 'D:/Yui Aragaki/桥本爱 Ai Hashimoto/pics',
+//   ext: 'jpg'
 // })
