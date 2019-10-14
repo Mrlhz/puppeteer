@@ -14,23 +14,27 @@ async function getMovieDetailsHtml(page) {
       const obj = {
         '导演': 'directors',
         '编剧': 'screenwriter',
-        // '主演': 'actor',
         '类型': 'genres',
         '制片国家/地区': 'countries',
         '语言': 'language',
         '上映日期': 'initial_release_date',
         '片长': 'runtime',
         '又名': 'original_title',
-        'IMDb链接': 'imdb' // http://www.imdb.com/title/tt10627720 ?
+        'IMDb链接': 'imdb', // http://www.imdb.com/title/tt10627720 ?
+        // 电视剧
+        '集数': 'episodes',
+        '单集片长': 'single_episode_length'
       }
 
       const summary = document.querySelector('#link-report')
       const info = document.querySelector('#content .article #info')
       let res = {}
-      res.url = location.href;
+      res.url = decodeURIComponent(location.href)
       if (info) {
         info.innerText.split('\n').filter(v => v).forEach((item) => {
-          const [key, value] = item.split(': ') // e.g. 类型: 剧情 / 历史
+          const index = item.indexOf(':') // e.g. 类型: 剧情 / 历史
+          const key = item.substring(0, index).trim()
+          const value = item.substring(index + 1).trim()
           if (key && obj[key]) {
             if (key === '导演' || key === '编剧' || key === '类型' || key === '上映日期' || key === '又名' || key === '语言' || key ==='制片国家/地区') {
               res[obj[key]] = value.split(' / ')
@@ -44,11 +48,10 @@ async function getMovieDetailsHtml(page) {
       }
       
       // todo 处理演员姓名与url
-      let actors = []
-      document.querySelectorAll('.actor a[href*="/celebrity"]').forEach((item) => {
+      let actors = Array.from(document.querySelectorAll('.actor a[href*="/celebrity"]')).map((item) => {
         const name = item.innerText
         const url = location.origin + item.getAttribute('href')
-        actors.push({name, url})
+        return {name, url}
       })
       const a = document.querySelector('#wrapper h1 span[property="v:itemreviewed"]') // title
       const rating_num = document.querySelector('#content .rating_num') // 豆瓣评分

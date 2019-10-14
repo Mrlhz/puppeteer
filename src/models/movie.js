@@ -40,13 +40,19 @@ const movieSchema = new Schema({
       type: String
     }]
   },
-  runtime: String,
+  runtime: {
+    type: String,
+    default: ''
+  },
   original_title: {
     type: [{
       type: String
     }]
   },
-  imdb: String,
+  imdb: {
+    type: String,
+    default: ''
+  },
   id: {
     type: Number,
     required: true
@@ -56,7 +62,10 @@ const movieSchema = new Schema({
     required: true
   },
   year: Number,
-  image: String,
+  image: {
+    type: String,
+    default: ''
+  },
   images: {
     type: {
       more: String
@@ -65,16 +74,31 @@ const movieSchema = new Schema({
   rating_people: Number,
   rating: Number,
   comments_count: Number,
-  summary: String,
+  summary: {
+    type: String,
+    default: ''
+  },
   actors: {// 主演
     type: [{
       name: String,
       url: String
     }]
   },
+  episodes: { // 集数
+    type: String,
+    default: ''
+  },
+  single_episode_length: { // 单集片长
+    type: String,
+    default: ''
+  },
   top250: {
     type: Number,
     default: 1
+  },
+  is_delete: {
+    type: Boolean,
+    default: false
   }
 })
 

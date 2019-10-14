@@ -6,7 +6,7 @@ const BriefSchema = new Schema({
   directors: {
     type: [String]
   },
-  rate: String,
+  rate: Number, // 0 暂无评分
   cover_x: Number,
   star: Number,
   title: String,
@@ -18,6 +18,10 @@ const BriefSchema = new Schema({
   driven: { // 是否爬虫到movie表中
     type: Number,
     default: 1
+  },
+  valid: { // 条目存在
+    type: Boolean,
+    default: true
   }
 })
 
