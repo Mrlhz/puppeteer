@@ -21,22 +21,25 @@ async function getBriefMovieInfo(params = {}) {
   for (let i = 0; i < len; i++) {
     const page = await browser.goto(urls[i])
     try {
-
       const item = await page.evaluate(() => {
-        const errMsg = document.querySelector('body').innerText
-        if (errMsg.indexOf('检测到有异常请求') !== -1) {
-          return { errMsg }
-        } else {
-          const pre = document.querySelector('body pre')
+        const pre = document.querySelector('body pre')
+        if (pre) {
           return JSON.parse(pre.innerHTML)
+        } else {
+          // errMsg.indexOf('检测到有异常请求') !== -1
+          return { errMsg: document.querySelector('body').innerText }
         }
       })
       if (item.errMsg) break
       const { data } = item
       if (data.length === 0) break
       for (let j = 0; j < data.length; j++) {
-        items.push(data[j])
-        await insertOne(movieBrief, data[j])
+        const movie = data[j]
+        if (typeof movie.rate === 'string') {
+          movie.rate = Number(movie.rate)
+        }
+        items.push(movie)
+        await insertOne(movieBrief, movie)
       }
       log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {
@@ -76,14 +79,15 @@ function makeUrls(params = {}) {
 }
 
 const urls = makeUrls({
-  start: 7000,
-  end: 8000,
+  start: 0,
+  end: 3000, // 6520
+  // sort: 'U',
+  range: '8,9',
   tags: '电影',
   // genres: '喜剧',
-  countries: '美国',
+  // countries: '法国',
   // year_range: '1990,1999' // 1,1959  | 2010,2019 |2019,2019
 })
-console.log(urls);
 
 getBriefMovieInfo({
   delay: 5000,

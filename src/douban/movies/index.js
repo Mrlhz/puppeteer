@@ -1,87 +1,57 @@
 const path = require('path')
+const process = require('process')
 
 const { books_mdn_data, movie_dir } = require('../../config/index')
 const { writeFile } = require('../../helper/tools')
-
+const movieBrief = require('../../models/movieBrief')
+const movie = require('../../models/movie')
 const { getMovieDetails } = require('./getMovieDetails')
+const { updateOneById, callback } = require('../../mongo/index')
 
+const log = console.log
 
 /**
  * `测试`
  */
-const movies = require('D:/books/mdn/data/movie/sort=S&range=6,10&tags=电影&countries=中国大陆&start=[0,1000].json')
+const urls = []
 
-const urls = movies.map((item) => item.url)
-
-console.log(urls.length)
 
 // 遍历 电影
 // getMovieDetails(urls, {
 //   delay: 6000,
-//   type: '中国大陆',
-//   output: books_mdn_data // 存放路径
 // })
-
-
 
 // 获取一部或几部电影
 // getMovieDetails(['https://movie.douban.com/subject/1297518/'], {
-//   delay: 5000,
-//   type: '喜剧-古装',
-//   name: '输出文件名',
-//   output: books_mdn_data // 存放路径，output下应有temp文件夹
+//   delay: 5000
 // })
 
 // 豆瓣电影 Top 250
 const { subject } = require(path.join(movie_dir, '豆瓣电影 Top 250.json'))
-const top250Urls = subject.map((item) => item.url);
+const top250Urls = subject.map((item) => item.url)
 // getMovieDetails(top250Urls, {
-//   delay: 5000,
-//   type: 'Top 250',
-//   output: movie_dir
+//   delay: 5000
 // })
 
 /**
- * `测试`
+ * `测试` 页面不存在
  */
 // getMovieDetails(['https://movie.douban.com/subject/26698264/'], {
-//   delay: 6000,
-//   type: '页面不存在',
-//   output: books_mdn_data // 存放路径
+//   delay: 6000
 // })
 
-getMovieDetails(['https://movie.douban.com/subject/1307739/'], {
-  delay: 0,
-  type: '90年代',
-  output: movie_dir // 存放路径
-})
+async function index(query) {
+  const brief = await movieBrief.find(query, callback).limit(99)
+  const urls = brief.map((item) => item.url)
+  const list = await getMovieDetails(urls, { delay: 3000 })
 
-
-function test() {
-  console.time('time')
-  const { subjects } = require(path.join(movie_dir, 'top2501.json'))
-  const { s } = require(path.join(movie_dir, 'Top 250-details.json'))
-  const res = subjects.map((item, index) => {
-    if(item.summary.indexOf('展开全部') !== -1) {
-      console.log(index, item.title)
-      item = s.find((ele) => ele.id === item.id)
-    }
-
-    return item
-  })
-
-  const result = {
-    type: 'Top 250',
-    total: res.length,
-    subjects: res
-  }
-  
-  writeFile({
-    fileName: 'top250.json',
-    data: result,
-    output: movie_dir
-  })
-  console.timeEnd('time')
+  log(brief.length)
+  process.exit(0)
 }
 
-// test()
+
+// index({ id: 1307739 })
+// index({ driven: 0 }) // 248
+
+index({ driven: 1, valid: true, rate: { $gt: 9 } })
+

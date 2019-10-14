@@ -2,12 +2,14 @@ const c = require('ansi-colors')
 const mongoose = require('mongoose')
 
 const doubanDb = 'mongodb://localhost/douban'
-const Movie = require('../models/movie')
+const movie = require('../models/movie')
 const movieBrief = require('../models/movieBrief')
 const bookBrief = require('../models/bookBrief')
 const tvBrief = require('../models/tvBrief')
 
 const log = console.log
+
+mongoose.set('useFindAndModify', false) // https://mongoosejs.com/docs/deprecations.html
 
 mongoose.connect(doubanDb, {
   useNewUrlParser: true,
@@ -23,75 +25,35 @@ const db = mongoose.connection
 // 将连接与错误事件绑定（以获得连接错误的提示）
 db.on('error', console.error.bind(console, 'MongoDB 连接错误：'))
 
-
-async function insertMany(filePath, modal) {
-  const { subjects } = require(filePath)
-  subjects.forEach((item) => {
-    if (!item.id) {
-      item.id = Number(item.url.match(/\/(\d+)\//)[1])
-    }
-  })
-  await modal.insertMany(subjects, function (err, docs) {
-    if (err) {
-      console.error(err);
-    }
-    console.log('insertMany', docs.length);
-  })
-
+function callback(err, doc) {
+  if (err) log(err)
 }
 
-// insertMany('D:/books/mdn/data/book-simple/外国名著-simple.json', bookBrief)
-
-async function insert(files, modal) {
-
-  for (let i = 0; i < files.length; i++) {
-    const { subjects } = require('D:/web/myblog/puppeteer/data/tv/min/' + files[i] + '.min.json')
-      await modal.insertMany(subjects, (err, docs) => {
-        if (err) console.error(err)
-        log('success:', docs.length)
-    })
-  }
-}
-
-// insert(["热门", "美剧", "英剧", "韩剧", "日剧", "国产剧", "港剧", "日本动画", "综艺", "纪录片"], tvBrief)
-
-async function insertOne(modal, list) {
-  const m = await modal.findOne({ id: list.id })
+async function insertOne(model, list) {
+  const m = await model.findOne({ id: list.id })
   if (m) {
-    // console.log(m);
     log(`${c.red('fail')}: ${list.title}(${list.id}) existed`)
   } else {
-    const res = await new modal(list).save()
-    log(c.green('insert success:'), res.title)
+    const res = await new model(list).save()
+    log(c.green('insert success:'), res.title, res.rating)
   }
 }
 
-async function remove(params) {
-  const res = await Movie.remove(params)
-  log('remove success', res)
+async function updateOneById(id, update) {
+  const conditions = { id }
+  log('conditions:', conditions)
+  // const update = { $set: { driven: 0 } }
+  const res = await movieBrief.findOneAndUpdate(conditions, update, callback)
+  log(res)
 }
 
-async function getMovie(params) {
-  let m = await Movie.find({
-    // 'countries': ['中国大陆','香港']
-    // 'countries': {$in: ['中国大陆','香港']},
-    // 'rating_people': {$gt:5000},
-    'id': 1291546
-  }, '', function (err, list) {
-    if (err) {
-      // return handleError(err);
-      console.log(err);
-    }
-    // console.log(list.length);
-  })
-  log(m.length)
-  log(m)
+async function find(model, params, callback) {
+  return await model.find(params, callback)
 }
-
-// getMovie()
-// remove({ id: 1307739 })
-
 
 module.exports = {
-  insertOne
+  insertOne,
+  updateOneById,
+  callback,
+  find
 }
