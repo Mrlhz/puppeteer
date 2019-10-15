@@ -4,22 +4,18 @@ const c = require('ansi-colors')
 require('module-alias/register')
 
 const { wait, writeFile } = require('D:/web/myblog/puppeteer/src/helper/tools')
-
-const { books_mdn_data, executablePath } = require('@config/index')
-
+const { executablePath } = require('@config/index')
 const { getBookTagsHtml, getHotTagsHtml } = require('../html/getBookTagsHtml')
-
+const bookTags = require('../../../models/bookTags')
+const { insertMany } = require('../../../mongo/index')
 
 /**
  * @description 保存豆瓣图书标签json `https://book.douban.com/tag/?view=type`
  * @param {String} urlPath url
  * @param {Object} options
  */
-async function getBookTags(url, getTargetHtml, options = {}) {
-  let { fileName, output = __dirname } = options
-  const browser = await puppeteer.launch({
-    executablePath
-  })
+async function getBookTags(url, getTargetHtml) {
+  const browser = await puppeteer.launch({ executablePath })
   const page = await browser.newPage()
   await page.goto(url)
   console.log(c.green('fetch') + ' ' + url)
@@ -28,12 +24,10 @@ async function getBookTags(url, getTargetHtml, options = {}) {
   await wait(3000)
 
   let result = await getTargetHtml(page)
+  console.log(c.bold.yellow(result.length))
 
-  await wait(0, false, c.bold.red('result') + ': ' + c.bold.yellow(result.total))
-  writeFile({
-    fileName,
-    data: result,
-    output
+  await insertMany(bookTags, result, (err) => {
+    if (err) console.log(err)
   })
 
   await browser.close()
@@ -43,16 +37,10 @@ async function getBookTags(url, getTargetHtml, options = {}) {
 /**
  * `豆瓣图书标签-分类浏览`
  */
-getBookTags('https://book.douban.com/tag/?view=type', getBookTagsHtml, {
-  fileName: 'tags.json',
-  output: books_mdn_data
-})
+getBookTags('https://book.douban.com/tag/?view=type', getBookTagsHtml)
 
 /**
  * `豆瓣图书标签-所有热门标签`
  */
-getBookTags('https://book.douban.com/tag/?view=cloud', getHotTagsHtml, {
-  fileName: 'hot-tags.json',
-  output: books_mdn_data
-})
+// getBookTags('https://book.douban.com/tag/?view=cloud')
 

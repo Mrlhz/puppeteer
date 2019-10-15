@@ -5,23 +5,20 @@
  */
 async function getBookTagsHtml(page) {
   try {
-    const result = await page.evaluate(() => {
-      const list = [];
-      let tagCol = document.querySelectorAll('.tagCol');
+    return await page.evaluate(() => {
+      const list = [] // document.querySelectorAll('.tagCol tbody td')
+      const tagCol = document.querySelectorAll('.tagCol') // table
       document.querySelectorAll('a.tag-title-wrapper').forEach((a, index) => {
-        let name = a.getAttribute('name')
-        let tags = Array.from(tagCol.item(index).querySelectorAll('tbody td')).map((td) => {
-          let tag = td.innerText // e.g 港台(8708)
-          let [title, value] = tag.split('(') // ["港台", "8708)"]
-          value = Number(value.replace(')', ''))
-          return { title, value }
-        });
-
-        list.push({name, tags})
-      });
+        const name = a.getAttribute('name')
+        tagCol.item(index).querySelectorAll('tbody td').forEach((td) => {
+          const tag = td.innerText ? td.innerText.replace(/[)]/, '') : '' // e.g 小说(6027382) => 小说(6027382
+          let [tagName, value] = tag.split('(') // ["小说", "6027382"]
+          value = Number(value)
+          list.push({ tag: tagName, value, type: name })
+        })
+      })
       return list
     })
-    return result
   } catch (e) {
     console.log(e)
   }
@@ -59,79 +56,7 @@ module.exports = {
  * `https://book.douban.com/tag/?view=cloud` 所有热门标签
  */
 
-// Array.from(document.querySelectorAll('.tagCol td')).map((td) => {
-//   let tag = td.innerText // e.g 小说(5985492)
-//   let [title, value] = tag.split('(') // ["小说", "5985492)"]
-//   value = Number(value.replace(')', ''))
-//   return { title, value }
-// })
-
-
 /**
  * `https://book.douban.com/tag/?view=type` 分类浏览
  */
-
-// 1
-// let names = document.querySelectorAll('.article a.tag-title-wrapper')
-
-// Array.from(document.querySelectorAll('table.tagCol')).map((item, index) => {
-//   let tagsList = Array.from(item.querySelectorAll('a, b'))
-//   let tags = []
-//   for (let i = 0, len = tagsList.length; i < len; i+=2) {
-//     tags.push({
-//       title: tagsList[i].innerText,
-//       value: tagsList[i+1].innerText.replace(/\(|\)/g, '')
-//     })
-//   }
-
-//   return {
-//     name: names[index].getAttribute('name'),
-//     tags
-//   }
-// })
-
-
-// 2
-
-// let names = document.querySelectorAll('.article a.tag-title-wrapper')
-
-// Array.from(document.querySelectorAll('table.tagCol')).map((table, index) => {
-//   let titles = Array.from(table.querySelectorAll('tr td a'))
-//   let tags = Array.from(table.querySelectorAll('tr td b')).map((value, i) => {
-//     return {
-//       title: titles[i].innerText,
-//       value: value.innerText.replace(/\(|\)/g, '')
-//     }
-//   })
-
-//   return {
-//     name: names[index].getAttribute('name'),
-//     tags
-//   }
-// })
-
-// 3
-
-// let tags = []
-
-// $('table.tagCol').each(function (i, v) {
-//   var $tagTitle = $('.tag-title-wrapper')[i].getAttribute('name')
-
-//   var $tag = []
-//   $(v).find('a').each(function (index, tag) {
-//     $tag.push($(tag).text())
-//   })
-//   var $value = [];
-//   $(v).find('b').each(function (index, tag) {
-//     $value.push({
-//       title: $tag[index],
-//       value: $(tag).text().replace(/\(|\)/g, '')
-//     })
-//   });
-
-//   tags.push({
-//     title: $tagTitle,
-//     tags: $value
-//   })
-// })
 
