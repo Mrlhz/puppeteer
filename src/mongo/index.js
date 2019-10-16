@@ -5,6 +5,7 @@ const doubanDb = 'mongodb://localhost/douban'
 const movie = require('../models/movie')
 const movieBrief = require('../models/movieBrief')
 const bookBrief = require('../models/bookBrief')
+const bookTags = require('../models/bookTags')
 const tvBrief = require('../models/tvBrief')
 
 const log = console.log
@@ -33,9 +34,11 @@ async function insertOne(model, list) {
   const m = await model.findOne({ id: list.id })
   if (m) {
     log(`${c.red('fail')}: ${list.title}(${list.id}) existed`)
+    return false
   } else {
     const res = await new model(list).save()
     log(c.green('insert success:'), res.title, res.rating)
+    return true
   }
 }
 
@@ -47,13 +50,14 @@ async function updateOneById(id, update) {
   log(res)
 }
 
-async function find(model, params, callback) {
-  return await model.find(params, callback)
+async function updateOne(model, conditions, update) {
+  const res = await model.findOneAndUpdate(conditions, update, callback) // 有返回值
+  log(res)
 }
 
 module.exports = {
   insertOne,
   updateOneById,
-  callback,
-  find
+  updateOne,
+  callback
 }

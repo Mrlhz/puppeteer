@@ -10,7 +10,8 @@ const { getBookListByTagHtml } = require('./html/getBookListByTag')
 
 const bookBrief = require('../../models/bookBrief')
 const bookTags = require('../../models/bookTags')
-const { insertOne, updateOne } = require('../../mongo/index')
+const { db } = require('../../mongo/db') // TODO 统一管理MongoDB
+const log = console.log
 
 /**
  * @description 获取豆瓣图书简介 e.g. `https://book.douban.com/tag/编程?start=0&type=T`，调取一次获取一页数据（20条）
@@ -18,18 +19,18 @@ const { insertOne, updateOne } = require('../../mongo/index')
  * @param {Object} [options={}]
  */
 async function getBookListByTag(urls, options = {}) {
-  const { delay = 3000, tag = '', type = '', typeName = '综合排序' } = options
+  const { delay = 3000, tag = '文学', type = 'T', typeName = '综合排序' } = options
+  let stop = 50
   const len = urls.length
   let items = []
   const instance = new Browser()
-  console.log(c.cyanBright(tag))
-  let count = 0
   for (let i = 0; i < len; i++) {
     const page = await instance.goto(urls[i])
     try {
-      const item = await getBookListByTagHtml(page)
+      const { item, pages } = await getBookListByTagHtml(page)
+      if (pages) stop = pages
       if(item.errMsg) {
-        console.log(c.yellowBright(item.errMsg))
+        log(c.yellowBright(item.errMsg))
         break
       }
 
@@ -40,39 +41,33 @@ async function getBookListByTag(urls, options = {}) {
           if (!element.tag) element.tag = [] 
           element.tag.push(tag)
           const res = await new bookBrief(element).save()
-          console.log(res)
+          log(`${c.green('insert success:')} ${res.title} ${res.id} ${res.rating}`)
         } else {
-          count++
-          console.log(`${c.red('fail')}: ${element.title}(${element.id}) existed`)
+          log(`${c.red('fail')}: ${element.title}(${element.id}) existed`)
           if (book.tag.indexOf(tag) === -1) {
             book.tag.push(tag)
             await bookBrief.findOneAndUpdate({ id: element.id }, { $set: { tag: book.tag } }, (err, docs) => {
-              if (err) console.log(err)
+              if (err) log(err)
             })
           }
-          // await bookBrief.updateOne({ id: element.id }, { $push: { tag: tag } }, (err, docs) => {
-          //   if (err) console.log(err)
-          //   console.log(1)
-          // })
         }
       }
 
       items.push(...item)
-      console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
+      log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
+      // 判断页数提前停止
+      if (stop === i + 1) {
+        log(c.yellowBright('pages end'))
+        break
+      }
     } catch (e) {
-      console.log(c.red(e))
+      log(c.red(e))
     }
     if (i !== len - 1) await wait(delay)
     await page.close()
   }
 
-  const sort = {
-    [type]: { value: typeName, driven: true }
-  }
-  console.log(sort)
-  await updateOne(bookTags, { tag }, { driven: 0, sort })
-
-  console.log(count)
+  await bookTags.findOneAndUpdate( { tag }, { [type]: 0 } )
 
   const result = {
     name: tag,
@@ -90,28 +85,19 @@ async function getBookListByTag(urls, options = {}) {
   await instance.close()
 }
 
-
 module.exports = {
   getBookListByTag
 }
 
-
 /**
  * `测试`
  */
-const types = ['T', 'R', 'S'] // type[综合排序 T  |  按出版日期排序 R |  按评价排序 S]
-const typeNames = {
-  T: '综合排序',
-  R: '按出版日期排序',
-  S: '按评价排序'
-}
-const type = types[2]
-
-async function index(conditions, limit=1) {
+async function index(params={}) {
+  const { conditions, limit = 1, type, typeName } = params
   const list = await bookTags.find(conditions).limit(limit)
 
   const len = list.length
-  for (let i = 0; i < list.length; i++) {
+  for (let i = 0; i < len; i++) {
     const tag = list[i].tag
     const urls = formatUrls('https://book.douban.com/tag/%s?start=%s&type=%s', {
       tag,
@@ -120,18 +106,31 @@ async function index(conditions, limit=1) {
       increase: 20,
       type
     })
-    console.log(urls)
+    log(urls)
     await getBookListByTag(urls, {
-      delay: 3500,
+      delay: 1000,
       tag,
       type,
-      typeName: typeNames[type]
+      typeName
     })
+    await wait(6000)
   }
-  console.log(len)
   process.exit(0)
 }
 
-// index({ driven: 1 })
-index({ tag: '外国名著' })
+const typeNames = {
+  T: '综合排序',
+  R: '按出版日期排序',
+  S: '按评价排序'
+}
+const types = ['T', 'R', 'S']
+const type = types[0]
+
+
+index({
+  conditions: { T : 1 }, // { T: 1, tag: '历史' } { tag: '编程' }
+  type,
+  typeName: typeNames[type],
+  limit: 50
+})
 
