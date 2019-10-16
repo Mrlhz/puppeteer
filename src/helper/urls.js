@@ -10,10 +10,10 @@ const utils = require('util')
  */
 function formatUrls(url, options = {}) {
   let {
-    start = 0, end = 20, increase = 20, tag = '编程', type = 'T'
+    start = 0, end = 1000, increase = 20, tag = '编程', type = 'T'
   } = options
   let urls = []
-  for (let i = start; i <= end; i += increase) {
+  for (let i = start; i < end; i += increase) {
     urls.push(utils.format(url, tag, i, type))
   }
   return urls;

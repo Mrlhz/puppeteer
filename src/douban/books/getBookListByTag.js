@@ -19,45 +19,48 @@ const log = console.log
  * @param {Object} [options={}]
  */
 async function getBookListByTag(urls, options = {}) {
-  const { delay = 3000, tag = '文学', type = 'T', typeName = '综合排序' } = options
-  let stop = 50
+  const { delay = 3000, tag = '文学', type = 'T' } = options
   const len = urls.length
-  let items = []
+  const result = []
+  let stop = len // 50
   const instance = new Browser()
   for (let i = 0; i < len; i++) {
     const page = await instance.goto(urls[i])
+    if (urls[i].indexOf('start=0') !== -1) {
+      stop = await getPaginator(page, len)
+      log(stop, 'stop')
+    }
     try {
-      const { item, pages } = await getBookListByTagHtml(page)
-      if (pages) stop = pages
-      if(item.errMsg) {
-        log(c.yellowBright(item.errMsg))
+      const items = await getBookListByTagHtml(page)
+      if(items.errMsg) {
+        log(c.yellowBright(items.errMsg))
         break
       }
 
-      for (let index = 0; index < item.length; index++) {
-        const element = item[index]
-        const book = await bookBrief.findOne({id: element.id })
+      for (let index = 0; index < items.length; index++) {
+        const item = items[index]
+        const book = await bookBrief.findOne({id: item.id })
         if (!book) {
-          if (!element.tag) element.tag = [] 
-          element.tag.push(tag)
-          const res = await new bookBrief(element).save()
+          if (!item.tag) item.tag = [] 
+          item.tag.push(tag)
+          const res = await new bookBrief(item).save()
           log(`${c.green('insert success:')} ${res.title} ${res.id} ${res.rating}`)
         } else {
-          log(`${c.red('fail')}: ${element.title}(${element.id}) existed`)
+          log(`${c.red('fail')}: ${item.title}(${item.id}) existed`)
           if (book.tag.indexOf(tag) === -1) {
             book.tag.push(tag)
-            await bookBrief.findOneAndUpdate({ id: element.id }, { $set: { tag: book.tag } }, (err, docs) => {
+            await bookBrief.updateOne({ id: item.id }, { $set: { tag: book.tag } }, (err, docs) => {
               if (err) log(err)
             })
           }
         }
       }
 
-      items.push(...item)
+      result.push(...items)
       log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
-      // 判断页数提前停止
       if (stop === i + 1) {
-        log(c.yellowBright('pages end'))
+        log(c.yellowBright('pages end')) // 判断页数提前停止
+        await bookTags.findOneAndUpdate( { tag }, { [type]: 0 } )
         break
       }
     } catch (e) {
@@ -66,23 +69,35 @@ async function getBookListByTag(urls, options = {}) {
     if (i !== len - 1) await wait(delay)
     await page.close()
   }
+  
+  await instance.close()
+  return result
+}
 
-  await bookTags.findOneAndUpdate( { tag }, { [type]: 0 } )
+async function getPaginator(page, n=50) {
+  const pages = await page.$$eval('.paginator a', nodes => Array.from(nodes).map((a) => a.innerText))
+  const len  = pages.length
+  if (len > 0) {
+    const target = Number(pages[len - 2]) // ["2", "3", "4", "5", "6", "7", "8", "9", "73", "74", "后页>"] => 74
+    return target > n ? n : target
+  }
+  return n // pages === [] e.g. `https://book.douban.com/tag/程序`没有页码
+}
 
-  const result = {
+function saveFile(list, options) {
+  const { tag, typeName, output = books_mdn_data } = options
+  const data = {
     name: tag,
     type: typeName,
-    total: items.length,
-    subjects: items
+    total: list.length,
+    subjects: list
   }
 
   writeFile({
     fileName: tag + '-simple.json',
-    data: result,
-    output: books_mdn_data
+    data,
+    output
   })
-  
-  await instance.close()
 }
 
 module.exports = {
@@ -92,28 +107,26 @@ module.exports = {
 /**
  * `测试`
  */
-async function index(params={}) {
-  const { conditions, limit = 1, type, typeName } = params
+async function index(urlParams = {}, options = {}) {
+  const { conditions, limit = 1, typeName } = options
   const list = await bookTags.find(conditions).limit(limit)
 
   const len = list.length
   for (let i = 0; i < len; i++) {
     const tag = list[i].tag
-    const urls = formatUrls('https://book.douban.com/tag/%s?start=%s&type=%s', {
-      tag,
-      start: 0,
-      end: 980,
-      increase: 20,
-      type
-    })
+    const urls = formatUrls('https://book.douban.com/tag/%s?start=%s&type=%s', { tag, ...urlParams })
     log(urls)
-    await getBookListByTag(urls, {
-      delay: 1000,
+    const result = await getBookListByTag(urls, {
+      delay: 3000,
       tag,
-      type,
-      typeName
+      ...urlParams
     })
-    await wait(6000)
+    if (result.length) {
+      saveFile(result, { tag, typeName })
+      await wait(6000)
+    } else {
+      break
+    }
   }
   process.exit(0)
 }
@@ -123,14 +136,15 @@ const typeNames = {
   R: '按出版日期排序',
   S: '按评价排序'
 }
-const types = ['T', 'R', 'S']
-const type = types[0]
+const type = ['T', 'R', 'S'][0]
+const urlParams = {
+  type
+}
 
-
-index({
-  conditions: { T : 1 }, // { T: 1, tag: '历史' } { tag: '编程' }
-  type,
+const options = {
+  conditions: { T: 1 }, // { T: 1, tag: '历史' }
   typeName: typeNames[type],
   limit: 50
-})
+}
 
+index(urlParams, options)
