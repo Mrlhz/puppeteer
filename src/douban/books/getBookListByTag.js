@@ -2,8 +2,7 @@ const process = require('process')
 
 const c = require('ansi-colors')
 
-const { wait, writeFile } = require('../../helper/tools')
-const { books_mdn_data } = require('../../config/index')
+const { wait, formatTime } = require('../../helper/tools')
 const { formatUrls } = require('../../helper/urls')
 const { Browser } = require('../../helper/browser')
 const { getBookListByTagHtml } = require('./html/getBookListByTag')
@@ -14,15 +13,16 @@ const { db } = require('../../mongo/db') // TODO 统一管理MongoDB
 const log = console.log
 
 /**
- * @description 获取豆瓣图书简介 e.g. `https://book.douban.com/tag/编程?start=0&type=T`，调取一次获取一页数据（20条）
+ * @description 获取豆瓣图书简介 e.g. `https://book.douban.com/tag/编程?start=0&type=T`，调用一次获取一页数据（20条）
  * @param {Array} urls
  * @param {Object} [options={}]
+ * @todo 1
  */
 async function getBookListByTag(urls, options = {}) {
   const { delay = 3000, tag = '文学', type = 'T' } = options
   const len = urls.length
   const result = []
-  let stop = len // 50
+  let stop = len // default 50
   const instance = new Browser()
   for (let i = 0; i < len; i++) {
     const page = await instance.goto(urls[i])
@@ -59,8 +59,7 @@ async function getBookListByTag(urls, options = {}) {
       result.push(...items)
       log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
       if (stop === i + 1) {
-        log(c.yellowBright('pages end')) // 判断页数提前停止
-        await bookTags.findOneAndUpdate( { tag }, { [type]: 0 } )
+        log(c.cyanBright(formatTime()) + c.yellowBright(' page end')) // 判断页数提前停止
         break
       }
     } catch (e) {
@@ -69,7 +68,8 @@ async function getBookListByTag(urls, options = {}) {
     if (i !== len - 1) await wait(delay)
     await page.close()
   }
-  
+
+  if (result.length) await bookTags.findOneAndUpdate( { tag }, { [type]: 0 } )
   await instance.close()
   return result
 }
@@ -84,22 +84,6 @@ async function getPaginator(page, n=50) {
   return n // pages === [] e.g. `https://book.douban.com/tag/程序`没有页码
 }
 
-function saveFile(list, options) {
-  const { tag, typeName, output = books_mdn_data } = options
-  const data = {
-    name: tag,
-    type: typeName,
-    total: list.length,
-    subjects: list
-  }
-
-  writeFile({
-    fileName: tag + '-simple.json',
-    data,
-    output
-  })
-}
-
 module.exports = {
   getBookListByTag
 }
@@ -108,23 +92,22 @@ module.exports = {
  * `测试`
  */
 async function index(urlParams = {}, options = {}) {
-  const { conditions, limit = 1, typeName } = options
+  const { conditions, limit = 1 } = options
   const list = await bookTags.find(conditions).limit(limit)
 
   const len = list.length
+  if (!len) log(c.yellowBright('no data'))
   for (let i = 0; i < len; i++) {
     const tag = list[i].tag
     const urls = formatUrls('https://book.douban.com/tag/%s?start=%s&type=%s', { tag, ...urlParams })
     log(urls)
     const result = await getBookListByTag(urls, {
-      delay: 3000,
       tag,
       ...urlParams
     })
-    if (result.length) {
-      saveFile(result, { tag, typeName })
+    if (result.length && i !== len -1) {
       await wait(6000)
-    } else {
+    } else if(!result.length) {
       break
     }
   }
@@ -136,15 +119,16 @@ const typeNames = {
   R: '按出版日期排序',
   S: '按评价排序'
 }
-const type = ['T', 'R', 'S'][0]
+
 const urlParams = {
-  type
+  delay: 3000,
+  start: 0,
+  type: ['T', 'R', 'S'][2]
 }
 
 const options = {
-  conditions: { T: 1 }, // { T: 1, tag: '历史' }
-  typeName: typeNames[type],
-  limit: 50
+  conditions: { S: 1 }, // { T: 1, tag: '历史' }
+  limit: 1
 }
 
 index(urlParams, options)

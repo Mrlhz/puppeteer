@@ -1,5 +1,3 @@
-const path = require('path')
-
 const c = require('ansi-colors')
 
 const { proxyServer } = require('../../config/ip')
@@ -27,20 +25,24 @@ async function getMovieDetails(urls, options = {}) {
   const items = []
   for (let i = 0; i < len; i++) {
     const page = await instance.goto(urls[i]) // 'proxy'
-    console.log('title', await page.title())
+    // console.log('title', await page.title())s
     const click = await page.$('.more-actor') // 更多主演
     const show_full = await page.$('.j.a_show_full') // 展开j a_show_full
     if(click) await page.click('.more-actor')
     if(show_full) await page.click('.j.a_show_full')
     try {
       const item = await getMovieDetailsHtml(page)
-      if(item.errMsg) {
+      if (item.doesNotExist) {
         await updateOneById(item.id, { $set: { valid: false } })
-        console.log(c.yellowBright(item.errMsg)) // e.g. 页面不存在 条目不存在
+        console.log(c.yellowBright(item.doesNotExist)) // e.g. 页面不存在 条目不存在
         continue
       }
-      await insertOne(movie, item)
-      await updateOneById(item.id, { $set: { driven: 0 } })
+      if (item.errMsg) {
+        console.log(c.yellowBright(item.errMsg))
+        break
+      }
+      const res = await insertOne(movie, item)
+      if (res) await updateOneById(item.id, { $set: { driven: 0 } })
       items.push(item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {

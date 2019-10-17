@@ -7,8 +7,12 @@
 async function getMovieDetailsHtml(page) {
   try {
     const html = await page.evaluate(() => {
+      const errMsg = document.body.innerText
       if (!document.querySelector('#content .article #info')) {
-        return { errMsg: document.title, id: Number(location.href.match(/\/(\d+)\//)[1])}
+        return { doesNotExist: document.title, id: Number(location.href.match(/\/(\d+)\//)[1])}
+      }
+      if (errMsg.indexOf('检测到有异常请求') !== -1) {
+        return { errMsg }
       }
       // getHtml
       const obj = {
