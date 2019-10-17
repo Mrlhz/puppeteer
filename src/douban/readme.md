@@ -34,3 +34,7 @@
 
 
 > `getBookDetails.js` 和 `getMovieDetails.js` 除了处理html方法，几个参数不同，执行流程是一样的
+
+> 豆瓣封IP，白天一分钟可以访问40次，晚上一分钟可以访问60次，超过限制次数就会封IP
+
+- [爬虫项目需求分析](https://edu.csdn.net/notebook/python/week11/6.html)

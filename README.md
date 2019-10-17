@@ -6,7 +6,12 @@
 - [爬虫利器 Puppeteer 实战](https://www.jianshu.com/p/a9a55c03f768)
 - [puppeteer-cn](https://npm.taobao.org/package/puppeteer-cn)
 - [awesome-puppeteer](https://github.com/transitive-bullshit/awesome-puppeteer/blob/master/readme.zh.md)
-
+- [mongoose-doc-cn](https://github.com/ssshooter/mongoose-doc-cn)
+- [mongoose 5.0 中文文档](https://cn.mongoosedoc.top/docs/guide.html)
+- [快代理](https://www.kuaidaili.com/)
+- [阿布云](https://www.abuyun.com/)
+- [HTTP隧道 （动态版）NodeJS 接入指南](https://www.abuyun.com/http-proxy/dyn-manual-nodejs.html)
+- [西刺免费代理IP](https://www.xicidaili.com/)
 
 ### 安装 Puppeteer
 
