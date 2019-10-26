@@ -201,9 +201,9 @@ function isImage(url) {
 function padzeros(input = '', n = 2) {
   const str = typeof input === 'string' ? input : input.toString()
   const strLen = str.length
-  const template = '0'.repeat(32)
 
   if (strLen !== n) {
+    const template = '0'.repeat(32)
     return template.substring(0, n - strLen) + str
   }
   return str

@@ -34,11 +34,11 @@ async function insertOne(model, list) {
   const m = await model.findOne({ id: list.id })
   if (m) {
     log(`${c.red('fail')}: ${list.title}(${list.id}) existed`)
-    return false
+    return m
   } else {
     const res = await new model(list).save()
     log(c.green('insert success:'), res.title, res.rating)
-    return true
+    return res
   }
 }
 
@@ -47,7 +47,7 @@ async function updateOneById(id, update) {
   log('conditions:', conditions)
   // const update = { $set: { driven: 0 } }
   const res = await movieBrief.findOneAndUpdate(conditions, update, callback)
-  log(res)
+  log('movieBrief', res.title)
 }
 
 async function updateOne(model, conditions, update) {
