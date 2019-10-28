@@ -55,6 +55,10 @@ const movieSchema = new Schema({
     type: Boolean,
     default: false
   },
+  download: {
+    type: Boolean,
+    default: false
+  },
   is_delete: {
     type: Boolean,
     default: false

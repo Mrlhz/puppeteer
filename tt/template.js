@@ -2,7 +2,6 @@ const path = require('path')
 const process = require('process')
 const c = require('ansi-colors')
 
-const { db } = require('./db')
 const { seriesSchema } = require('./models/series')
 const { movieSchema } = require('./models/movie')
 const { getLists } = require('./html/series')
@@ -17,14 +16,13 @@ const log = console.log
  * `0. 判断页面页码 ？`
  * `1. 输入urls 遍历`
  * `2. 容错处理`
- * `3. 保存截图`
+ * `3. 保存截图 ？`
  * `4. 保存数据到数据库`
  */
 async function init(params) {
   let { urls } = params
-  const result = [] // 统一返回数组吧
+  let result = [] // 统一返回数组
   const browser = new Browser({})
-  console.log(urls)
 
   if (Array.isArray(urls)) {
     for (let i = 0, len = urls.length; i < len; i++) {
@@ -35,7 +33,7 @@ async function init(params) {
       log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
       await page.close()
     }
-  } else if (typeof urls === 'string'){
+  } else if (typeof urls === 'string') {
     let pageNumber = 1
     while (pageNumber < 500) {
       const page = await browser.goto(`${urls}/page/${pageNumber}`)
@@ -56,44 +54,82 @@ async function init(params) {
   process.exit(0)
 }
 
-
+/**
+ *
+ * @description `getHtml`
+ * @param {object} params
+ * @returns {Array} 
+ */
 async function template(params) {
-  const { page, gethtml, filePath, model, pageNumber, delay = 3000, pdf } = params
+  const { page, gethtml, task, series, print, pageNumber, filePath, delay = 3000 } = params
 
-  const result = await gethtml(page)
-  if (pdf) {
-    let title = await page.title()
-    title = pageNumber ? `${title}-page-${pageNumber}` : title
-    await page.screenshot({
-      path: path.resolve(filePath, `${title}.png`), // todo
-      fullPage: true
-    })
+  const data = await gethtml(page)
+  if (task === 'series') {
+    await setSeriesData(data, series)
+  } else if (task === 'movies') {
+    await setMoviesData(data)
   }
 
-  const mask = result.map((item) => setData(model, item))
-  const [ { av, star } ] = await Promise.all(mask)
-
-  if (star) {
-    console.log('update1', av);
-    const updated = Date.now() + 8 * 60 * 60 * 1000
-    const update = await seriesSchema.findOneAndUpdate({ av }, { $set: { driven: 0, updated } })
-    log('opdate:', update)
+  if (print) {
+    await pdf({ page, pageNumber, filePath })
   }
+
   await wait(delay)
 
-  return result
+  return data
 }
 
-async function setData(model, data) {
-  const m = await model.findOne({ av: data.av })
+async function setSeriesData(data, series='') {
+  try {
+    data = data.map((item) => { item.series = series; return item })
+    const mask = data.map((item) => setData(seriesSchema, item))
+    const { length } = await Promise.all(mask)
+    log('success', length)
+  } catch (e) {
+    log(c.red(e))
+  }
+}
+
+async function setMoviesData(data) {
+  try {
+    const mask = data.map((item) => setData(movieSchema, item))
+    const [ { av, star } ] = await Promise.all(mask)
+    if (star) {
+      console.log('update1', av);
+      const updated = Date.now() + 8 * 60 * 60 * 1000
+      const update = await seriesSchema.findOneAndUpdate({ av }, { $set: { driven: 0, updated } })
+      log('opdate:', update)
+    }
+  } catch (e) {
+    log(c.red(e))
+  }
+}
+
+async function setData(model, item) {
+  const m = await model.findOne({ av: item.av })
   if (m) {
-    log(`${c.red('fail')}: ${data.title}(${data.av}) existed`)
+    log(`${c.red('fail')}: ${item.title}(${item.av}) existed`)
+    // if (!m.series) {
+    //   const update = await seriesSchema.findOneAndUpdate({ av: item.av }, { $set: { series: '' } })
+    //   log(update, 'update')
+    // }
     return m
   } else {
-    const res = await new model(data).save()
+    const res = await new model(item).save()
     log(c.green('insert success:'), res.title, res.av)
     return res
   }
+}
+
+
+async function pdf(pdfParams) {
+  const { page, pageNumber, filePath } = pdfParams
+  let title = await page.title()
+  title = pageNumber ? `${title}-page-${pageNumber}` : title
+  await page.screenshot({
+    path: path.resolve(filePath, `${title}.png`), // todo
+    fullPage: true
+  })
 }
 
 
