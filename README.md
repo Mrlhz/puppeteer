@@ -49,8 +49,9 @@ node src/CityParser/index.js
 ```
 - [爬取豆瓣图书](./src/douban/books/index.js)
 
-```
-node src/douban/books/index.js
+```sh
+# 获取图书简介
+node getBookListByTag.js
 ```
 - [爬取豆瓣电影](./src/douban/movies/index.js)
 
