@@ -18,7 +18,7 @@ const log = console.log
  * `4. 保存数据到数据库`
  */
 async function init(params) {
-  let { urls } = params
+  let { urls, showall, delay = 3000 } = params
   let result = [] // 统一返回数组
   const browser = new Browser({})
 
@@ -35,7 +35,11 @@ async function init(params) {
     let pageNumber = 1
     while (pageNumber < 500) {
       const url = pageNumber === 1 ? urls : `${urls}/${pageNumber}`
-      const page = await browser.goto(url)
+      let page = await browser.goto(url)
+      
+      await showAll(page, showall) // 全部影片 || 已有磁力
+      await wait(showall ? delay - 500 : delay)
+
       const items = await template({ page, pageNumber, ...params })
       result.push(...items)
       const nextPage = await page.$('#next')
@@ -60,7 +64,7 @@ async function init(params) {
  * @returns {Array} 
  */
 async function template(params) {
-  const { page, gethtml, task, series, print, pageNumber, filePath, delay = 3000 } = params
+  const { page, gethtml, task, series, print, pageNumber, filePath } = params
 
   const data = await gethtml(page)
   if (task === 'series') {
@@ -73,22 +77,11 @@ async function template(params) {
     await pdf({ page, pageNumber, filePath })
   }
 
-  await wait(delay)
-
   return data
 }
 
 async function setSeriesData(data, series='') {
-  const vrs = []
-  const list = []
-  data.forEach((item) => {
-    if (item.title.indexOf('【VR】') === -1) {
-      list.push(item)
-    } else {
-      vrs.push(item)
-    }
-  })
-  log(vrs, 'ignore')
+  const list = filterVR(data)
   try {
     data = list.map((item) => { item.series = series; return item })
     const mask = data.map((item) => setData(seriesSchema, item))
@@ -104,7 +97,7 @@ async function setMoviesData(data) {
     const mask = data.map((item) => setData(movieSchema, item))
     const [ { av, star } ] = await Promise.all(mask)
     if (star) {
-      console.log('update1', av);
+      console.log('update1', av)
       const updated = Date.now() + 8 * 60 * 60 * 1000
       const update = await seriesSchema.findOneAndUpdate({ av }, { $set: { driven: 0, updated } })
       log('opdate:', update)
@@ -141,11 +134,23 @@ async function pdf(pdfParams) {
   })
 }
 
-function filter() {
-  [...document.querySelectorAll('h1 .text-bold')].map((item) => {
-    return `[${item.innerText}](${location.origin + item.getAttribute('href')})`
+
+async function showAll(page, showall) {
+  if (showall) {
+    const resultshowall = page.$('#resultshowall')
+    resultshowall ? page.click('#resultshowall') : ''
+  }
+}
+
+function filterVR(data) {
+  const vrs = []
+  const list = []
+  data.forEach((item) => {
+    item.title.indexOf('【VR】') === -1 ? list.push(item) : vrs.push(item)
   })
 
+  log(vrs, 'ignore')
+  return list
 }
 
 

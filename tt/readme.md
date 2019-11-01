@@ -17,6 +17,3 @@
 防屏蔽地址：https://www.dmmbus.work
 防屏蔽地址：https://www.cdnbus.work
 防屏蔽地址：https://www.busdmm.work
-
-枢木あおい
-泉りおん

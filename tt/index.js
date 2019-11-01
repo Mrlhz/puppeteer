@@ -59,6 +59,7 @@ const options = {
   task: 'series',
   filePath: 'D:/md/avmoo',
   print: false,
+  showall: false, // 全部影片
   ...params
 }
 
