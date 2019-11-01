@@ -16,8 +16,8 @@
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
     "module-alias": "^2.2.1",
-    "mongoose": "^5.7.3",
-    "puppeteer": "^1.20.0",
+    "mongoose": "^5.7.7",
+    "puppeteer": "^2.0.0",
     "turndown": "^5.0.3"
   },
   "_moduleAliases": {
