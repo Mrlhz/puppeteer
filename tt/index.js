@@ -3,8 +3,7 @@ const process = require('process')
 const { db } = require('./db')
 const { seriesSchema } = require('./models/series')
 const { movieSchema } = require('./models/javbus')
-const { getLists } = require('./html/series')
-const { getOne } = require('./html/javbus')
+const { getOne, getLists } = require('./html/javbus')
 const { init } = require('./template')
 
 const log = console.log
@@ -29,9 +28,10 @@ var p = {
 
 // 开车
 async function getMovies(options, conditions={ driven: 1 }) {
-  const { limit = 30 } = options
+  const { limit = 30, origin } = options
   const data = await seriesSchema.find(conditions).limit(limit)
-  const urls = data.map((item) => item.url)
+  let urls = data.map((item) => item.url)
+  urls = origin ? urls.map((url) => setOrigin(url)) : urls
   console.log(urls);
   init({
     urls,
@@ -40,6 +40,20 @@ async function getMovies(options, conditions={ driven: 1 }) {
     ...options
   })
   return urls
+}
+
+function setOrigin(oldUrl='', index=3) {
+  let re = /^https?:\/\/[\w.]+\/([a-zA-Z0-9-]+)$/i // e.g. https://www.javbus.cc/[IPZ-931]
+  const origin = [
+    'https://www.seedmm.work',
+    'https://www.dmmbus.work',
+    'https://www.cdnbus.work',
+    'https://www.busdmm.work',
+    'https://www.dmmsee.bid'
+  ]
+  const start = oldUrl.lastIndexOf('/')
+  const av = oldUrl.substring(start)
+  return origin[index] + av
 }
 
 let conditions = {}
@@ -59,6 +73,7 @@ const options = {
   task: 'series',
   filePath: 'D:/md/avmoo',
   print: false,
+  origin: false, // 更改url origin
   showall: false, // 全部影片
   ...params
 }

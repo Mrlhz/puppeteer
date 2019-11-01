@@ -40,7 +40,7 @@ async function init(params) {
       await showAll(page, showall) // 全部影片 || 已有磁力
       await wait(showall ? delay - 500 : delay)
 
-      const items = await template({ page, pageNumber, ...params })
+      const items = await template({ page, ...params })
       result.push(...items)
       const nextPage = await page.$('#next')
       if (!nextPage) {
@@ -58,13 +58,12 @@ async function init(params) {
 }
 
 /**
- *
  * @description `getHtml`
  * @param {object} params
  * @returns {Array} 
  */
 async function template(params) {
-  const { page, gethtml, task, series, print, pageNumber, filePath } = params
+  const { page, gethtml, task, series, print, filePath } = params
 
   const data = await gethtml(page)
   if (task === 'series') {
@@ -74,12 +73,17 @@ async function template(params) {
   }
 
   if (print) {
-    await pdf({ page, pageNumber, filePath })
+    await screenshot({ page, filePath })
   }
 
   return data
 }
 
+/**
+ * @description 保存电影简略信息
+ * @param {array} data
+ * @param {string} [series='']
+ */
 async function setSeriesData(data, series='') {
   const list = filterVR(data)
   try {
@@ -108,6 +112,7 @@ async function setMoviesData(data) {
 }
 
 async function setData(model, item) {
+  if (!item.av) return 
   const m = await model.findOne({ av: item.av })
   if (m) {
     log(`${c.red('fail')}: ${item.title}(${item.av}) existed`)
@@ -124,10 +129,20 @@ async function setData(model, item) {
 }
 
 
-async function pdf(pdfParams) {
-  const { page, pageNumber, filePath } = pdfParams
+async function screenshot(pdfParams) {
+  const { page, filePath } = pdfParams
+  const { pagination } = await page.evaluate(() => {
+    document.querySelectorAll('.ad-table').forEach((ad) => {
+      ad.style.display = 'none' // 隐藏广告
+    })
+    let pagination = document.querySelector('.pagination .active')
+    pagination = pagination ? pagination.innerText : '' // 当前页面
+    return { pagination }
+  })
+
   let title = await page.title()
-  title = pageNumber ? `${title}-page-${pageNumber}` : title
+  title = pagination ? `${title}-page-${pagination}` : title
+
   await page.screenshot({
     path: path.resolve(filePath, `${title}.png`), // todo
     fullPage: true

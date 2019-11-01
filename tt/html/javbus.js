@@ -26,8 +26,7 @@ async function getLists(page) {
 }
 
 /**
- * @description 根据 `avmoo.asia` 网站编写，返回`一部作品`html内容
- *
+ * @description 根据 `https://www.javbus.com` 网站编写，返回`一部作品`html内容
  * @param {puppeteer.Page} page
  */
 async function getOne(page) {
@@ -42,13 +41,13 @@ async function getOne(page) {
         // 3. 磁力链接
         const magnet = Array.from(document.querySelectorAll('#magnet-table tr')).map((item) => {
           const magnet = [...item.querySelectorAll('td')].reduce((acc, cur, index) => {
+            const keyMap = ['', 'size', 'date']
             if (index === 0) {
               acc['name'] = cur.innerText
               acc['link'] = cur.querySelector('a') ? cur.querySelector('a').getAttribute('href') : ''
-            } else if (index === 1) {
-              acc['size'] = cur.querySelector('a') ? cur.querySelector('a').innerText : ''
-            } else if (index === 2) {
-              acc['date'] = cur.querySelector('a') ? cur.querySelector('a').innerText : ''
+            } else {
+              const key = keyMap[index];
+              acc[key] = cur.querySelector('a') ? cur.querySelector('a').innerText : ''
             }
             return acc
           }, {})
