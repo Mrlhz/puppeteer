@@ -3,7 +3,8 @@ const process = require('process')
 const mongoose = require('mongoose')
 const c = require('ansi-colors')
 
-const doubanDb = 'mongodb://localhost/bt'
+// const doubanDb = 'mongodb://localhost/bt'
+const doubanDb = 'mongodb://localhost/javbus'
 const btbook = require('./models/bt')
 
 const log = console.log

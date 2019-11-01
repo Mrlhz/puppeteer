@@ -2,9 +2,9 @@ const process = require('process')
 
 const { db } = require('./db')
 const { seriesSchema } = require('./models/series')
-const { movieSchema } = require('./models/movie')
+const { movieSchema } = require('./models/javbus')
 const { getLists } = require('./html/series')
-const { getHtml } = require('./html/movie')
+const { getOne } = require('./html/javbus')
 const { init } = require('./template')
 
 const log = console.log
@@ -28,49 +28,53 @@ var p = {
 
 
 // 开车
-async function getMovies(options) {
+async function getMovies(options, conditions={ driven: 1 }) {
   const { limit = 30 } = options
-  const data = await seriesSchema.find({ driven: 1 }).limit(limit)
+  const data = await seriesSchema.find(conditions).limit(limit)
   const urls = data.map((item) => item.url)
   console.log(urls);
   init({
     urls,
-    gethtml: getHtml,
+    gethtml: getOne,
     task: 'movies',
     ...options
   })
   return urls
 }
 
-
+let conditions = {}
 const params = process.argv.slice(2).reduce((acc, cur) => {
   let [key, value] = cur.split('=')
-  if (!Number.isNaN(Number(value))) {
-    value = Number(value)
+  if (key === 'conditions') {
+    const [k, v] = value.split(':')
+    conditions[k] = v
+  } else {
+    !Number.isNaN(Number(value)) ? value = Number(value) : value
+    acc[key] = value
   }
-  acc[key] = value
   return acc
 }, {})
 
 const options = {
   task: 'series',
   filePath: 'D:/md/avmoo',
-  print: true,
+  print: false,
   ...params
 }
 
-log(options)
+log(options, conditions)
 
 if (options.task === 'series') {
   getSeries(options)
 } else if (options.task === 'movies') {
-  getMovies(options)
+  Object.keys(conditions).length > 0 ? getMovies(options, conditions): getMovies(options)
 }
 
 // process.exit(0)
 
-// series
+// series 已有磁力
 // node tt\index.js urls=https://avmask.com/cn/star/9c786fb6e8c34746 series=河北彩花
 
 // movies
-// node tt\index.js task=movies limit=25
+// node index.js task=movies limit=25
+// node index.js task=movies limit=25 conditions=av:[番号]

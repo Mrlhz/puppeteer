@@ -3,9 +3,7 @@ const process = require('process')
 const c = require('ansi-colors')
 
 const { seriesSchema } = require('./models/series')
-const { movieSchema } = require('./models/movie')
-const { getLists } = require('./html/series')
-const { getHtml } = require('./html/movie')
+const { movieSchema } = require('./models/javbus')
 
 const { Browser } = require('../src/helper/browser')
 const { wait } = require('../src/helper/tools')
@@ -36,10 +34,11 @@ async function init(params) {
   } else if (typeof urls === 'string') {
     let pageNumber = 1
     while (pageNumber < 500) {
-      const page = await browser.goto(`${urls}/page/${pageNumber}`)
+      const url = pageNumber === 1 ? urls : `${urls}/${pageNumber}`
+      const page = await browser.goto(url)
       const items = await template({ page, pageNumber, ...params })
       result.push(...items)
-      const nextPage = await page.$('a[name*="nextpage"]')
+      const nextPage = await page.$('#next')
       if (!nextPage) {
         log(c.yellowBright(`stop on the ${pageNumber} page`))
         break
@@ -80,8 +79,18 @@ async function template(params) {
 }
 
 async function setSeriesData(data, series='') {
+  const vrs = []
+  const list = []
+  data.forEach((item) => {
+    if (item.title.indexOf('【VR】') === -1) {
+      list.push(item)
+    } else {
+      vrs.push(item)
+    }
+  })
+  log(vrs, 'ignore')
   try {
-    data = data.map((item) => { item.series = series; return item })
+    data = list.map((item) => { item.series = series; return item })
     const mask = data.map((item) => setData(seriesSchema, item))
     const { length } = await Promise.all(mask)
     log('success', length)
@@ -130,6 +139,13 @@ async function pdf(pdfParams) {
     path: path.resolve(filePath, `${title}.png`), // todo
     fullPage: true
   })
+}
+
+function filter() {
+  [...document.querySelectorAll('h1 .text-bold')].map((item) => {
+    return `[${item.innerText}](${location.origin + item.getAttribute('href')})`
+  })
+
 }
 
 
