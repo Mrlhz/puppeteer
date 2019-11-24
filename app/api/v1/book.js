@@ -7,9 +7,11 @@ const router = new Router({
 })
 
 router.get('/', async (ctx, next) => {
-  const books = await bookBrief.find({}).limit(100)
+  const { start = 0, count = 20, q } = ctx.request.query
+  let query = q ? { title: new RegExp(q, 'i') } : {}
+  const books = await bookBrief.find(query).skip(Number(start)).limit(count)
   ctx.body = {
-    // books,
+    books,
     total: books.length
   }
 })
