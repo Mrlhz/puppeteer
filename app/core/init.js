@@ -6,6 +6,7 @@ class initManager {
   static initCore(app) {
     this.app = app
     this.initLoadRouters()
+    this.loadConfig()
   }
 
   static initLoadRouters() {
@@ -22,7 +23,9 @@ class initManager {
   }
 
   static loadConfig(path) {
-
+    const configPath = path || process.cwd() + '/config/index.js'
+    const config = require(configPath)
+    global.config = config
   }
 }
 
