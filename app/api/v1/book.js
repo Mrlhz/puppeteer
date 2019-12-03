@@ -2,17 +2,14 @@ const Router = require('koa-router')
 
 const bookBrief = require('../../../src/models/bookBrief')
 const bookTags = require('../../../src/models/bookTags')
+const { getData } = require('./helper')
 
 const router = new Router({
   prefix: '/v1/book'
 })
 
 router.get('/', async (ctx, next) => {
-  let { start = 0, count = 20, q } = ctx.request.query
-  start = Number.isNaN(Number(start)) ? 0 : Number.parseInt(start)
-  let query = q ? { title: new RegExp(q, 'i') } : {}
-
-  const books = await bookBrief.find(query).skip(start).limit(Number.parseInt(count))
+  const books = await getData(ctx, bookBrief, 'title')
   ctx.body = {
     books,
     total: books.length

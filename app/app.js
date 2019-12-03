@@ -3,7 +3,7 @@ const parser = require('koa-bodyparser')
 const c = require('ansi-colors')
 
 const { db } = require('../src/mongo/db')
-const { catchError } = require('./core/httpException')
+const { catchError } = require('./middlewares/catchError')
 const { initManager } = require('./core/init')
 const asyncLog = require('./middlewares/log')
 
