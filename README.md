@@ -58,3 +58,11 @@ node getBookListByTag.js
 ```
 node src/douban/movies/index.js
 ```
+
+- 获取某个网页的一些数据
+
+```sh
+cd src/helper
+# 修改getHtml
+node getJSONFile.js
+```
