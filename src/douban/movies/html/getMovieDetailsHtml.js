@@ -15,20 +15,24 @@ async function getMovieDetailsHtml(page) {
         return { errMsg }
       }
       // getHtml
-      const obj = {
+      const splitList = {
         '导演': 'directors',
         '编剧': 'screenwriter',
         '类型': 'genres',
-        '制片国家/地区': 'countries',
-        '语言': 'language',
         '上映日期': 'initial_release_date',
-        '片长': 'runtime',
         '又名': 'original_title',
+        '制片国家/地区': 'countries',
+        '语言': 'language'
+      }
+      // 导演|编剧|类型|上映日期|又名|制片国家/地区|语言
+      const splitListStr = Object.keys(splitList).join('|')
+      const obj = Object.assign({}, splitList, {
+        '片长': 'runtime',
         'IMDb链接': 'imdb', // http://www.imdb.com/title/tt10627720 ?
         // 电视剧
         '集数': 'episodes',
         '单集片长': 'single_episode_length'
-      }
+      })
 
       const summary = document.querySelector('#link-report')
       const info = document.querySelector('#content .article #info')
@@ -40,7 +44,7 @@ async function getMovieDetailsHtml(page) {
           const key = item.substring(0, index).trim()
           const value = item.substring(index + 1).trim()
           if (key && obj[key]) {
-            if (key === '导演' || key === '编剧' || key === '类型' || key === '上映日期' || key === '又名' || key === '语言' || key ==='制片国家/地区') {
+            if (splitListStr.indexOf(key) !== -1) {
               res[obj[key]] = value.split(' / ')
             } else if (key === 'IMDb链接') {
               res[obj[key]] = 'http://www.imdb.com/title/' + value

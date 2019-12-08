@@ -25,11 +25,8 @@ async function getMovieDetails(urls, options = {}) {
   const items = []
   for (let i = 0; i < len; i++) {
     const page = await instance.goto(urls[i]) // 'proxy'
-    // console.log('title', await page.title())s
-    const click = await page.$('.more-actor') // 更多主演
-    const show_full = await page.$('.j.a_show_full') // 展开j a_show_full
-    if(click) await page.click('.more-actor')
-    if(show_full) await page.click('.j.a_show_full')
+    // console.log('title', await page.title())
+    await showAll(page, ['.more-actor', '.j.a_show_full']) // 展开内容
     try {
       const item = await getMovieDetailsHtml(page)
       if (item.doesNotExist) {
@@ -55,6 +52,13 @@ async function getMovieDetails(urls, options = {}) {
   await instance.close()
   console.timeEnd('time')
   return items
+}
+
+async function showAll(page, list=[]) {
+  for (const item of list) {
+    let node = await page.$(item)
+    if (node) await page.click(item)
+  }
 }
 
 module.exports = {
