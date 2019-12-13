@@ -6,7 +6,8 @@ const { proxyServer } = require('../../config/ip')
 const { wait, writeFile } = require('../../helper/tools')
 const { Browser } = require('../../helper/browser')
 const { getBookDetailsHtml } = require('./html//getBookDetailsHtml')
-const { insertOne } = require('../../mongo/index')
+const { insertOne, updateOneById } = require('../../mongo/index')
+const bookBrief = require('../../models/bookBrief')
 const book = require('../../models/book')
 const { showAll } = require('../util')
 
@@ -18,7 +19,7 @@ const { showAll } = require('../util')
  */
 async function getBookDetails(urls, options = {}) {
   console.time('time')
-  const { delay = 3000, type = '类型' } = options
+  const { delay = 3000, tags = [] } = options
   const len = urls.length
   let items = []
   const instance = new Browser({
@@ -36,7 +37,10 @@ async function getBookDetails(urls, options = {}) {
         break
       }
       // save
-      await insertOne(book, item)
+      item.category = tags[i]
+      const res = await insertOne(book, item)
+      console.log(res, 'res')
+      if (res) await updateOneById(bookBrief, item.id, { $set: { driven: 0 } })
       items.push(item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {

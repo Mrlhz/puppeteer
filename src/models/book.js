@@ -15,8 +15,11 @@ const bookSchema = new Schema({
   author: {
     type: [String] // 作者
   },
-  binding: String, // 装帧
-  category: String, // tag分类
+  binding: { // 装帧
+    type: String,
+    default: ''
+  },
+  category: [String], // tag分类
   id: Number,
   url: String,
   image: String,
@@ -27,15 +30,33 @@ const bookSchema = new Schema({
   },
   isbn: Number,
   pages: Number, // 页数
-  price: String, // 定价
+  price: {
+    type: String,
+    default: ''
+  }, // 定价
   pubdate: String, // 出版年
-  series: String, // 丛书
-  publisher: String, // 出版社
-  producer: String, // 出品方
-  subtitle: String, // 副标题
+  series: {
+    type: String,
+    default: ''
+  }, // 丛书
+  publisher: { // 出版社
+    type: String,
+    default: ''
+  },
+  producer: { // 出品方
+    type: String,
+    default: ''
+  },
+  subtitle: {
+    type: String,
+    default: ''
+  }, // 副标题
   summary: String, // 内容简介
   title: String,
-  original: String,
+  original: {
+    type: String,
+    default: ''
+  },
   translator: {
     type: [{
       type: String

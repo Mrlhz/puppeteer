@@ -21,7 +21,6 @@ console.log(name, urls.length) // 编程 1000
 // })
 
 
-
 // 获取一本或几本书
 // getBookDetails(['https://book.douban.com/subject/26836700/'], {
 //   delay: 5000,
@@ -35,11 +34,13 @@ const bookBrief = require('../../models/bookBrief')
 const { callback } = require('../../mongo/index')
 
 async function index(query) {
-  const brief = await bookBrief.find(query, callback).limit(10)
+  const brief = await bookBrief.find(query, callback).limit(100)
   const urls = brief.map((item) => item.url)
-  const list = await getBookDetails(urls, { delay: 2000 })
+  const tags = brief.map((item) => item.tag)
 
-  console.log(brief.length, urls, list)
+  console.log(brief.length, urls)
+  const list = await getBookDetails(urls, { delay: 2000, tags })
+
   process.exit(0)
 }
 

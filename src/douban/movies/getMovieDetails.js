@@ -4,6 +4,7 @@ const { proxyServer } = require('../../config/ip')
 const { wait } = require('../../helper/tools')
 const { Browser } = require('../../helper/browser')
 const { getMovieDetailsHtml } = require('./html/getMovieDetailsHtml')
+const movieBrief = require('../../models/movieBrief')
 const movie = require('../../models/movie')
 const { insertOne, updateOneById } = require('../../mongo/index')
 const { showAll } = require('../util')
@@ -31,7 +32,7 @@ async function getMovieDetails(urls, options = {}) {
     try {
       const item = await getMovieDetailsHtml(page)
       if (item.doesNotExist) {
-        await updateOneById(item.id, { $set: { valid: false } })
+        await updateOneById(movieBrief, item.id, { $set: { valid: false } })
         console.log(c.yellowBright(item.doesNotExist)) // e.g. 页面不存在 条目不存在
         continue
       }
@@ -40,7 +41,7 @@ async function getMovieDetails(urls, options = {}) {
         break
       }
       const res = await insertOne(movie, item)
-      if (res) await updateOneById(item.id, { $set: { driven: 0 } })
+      if (res) await updateOneById(movieBrief, item.id, { $set: { driven: 0 } })
       items.push(item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {

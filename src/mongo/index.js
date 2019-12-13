@@ -42,12 +42,12 @@ async function insertOne(model, list) {
   }
 }
 
-async function updateOneById(id, update) {
+async function updateOneById(model, id, update) {
   const conditions = { id }
-  log('conditions:', conditions)
+  log('conditions:', conditions, update)
   // const update = { $set: { driven: 0 } }
-  const res = await movieBrief.findOneAndUpdate(conditions, update, callback)
-  log('movieBrief', res.title)
+  const res = await model.findOneAndUpdate(conditions, update, callback)
+  log('brief title', res.title)
 }
 
 async function updateOne(model, conditions, update) {
