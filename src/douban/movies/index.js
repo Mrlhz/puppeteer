@@ -28,9 +28,9 @@ const top250Urls = subject.map((item) => item.url)
 // })
 
 async function index(query) {
-  const brief = await movieBrief.find(query, callback).limit(10)
+  const brief = await movieBrief.find(query, callback).limit(100)
   const urls = brief.map((item) => item.url)
-  const list = await getMovieDetails(urls, { delay: 3000 })
+  const list = await getMovieDetails(urls, { delay: 2000 })
 
   log(brief.length, urls, list)
   process.exit(0)
@@ -40,7 +40,7 @@ async function index(query) {
 // index({ id: 1307739 })
 // index({ driven: 0 }) // 248
 
-index({ driven: 1, valid: true, rate: { $gte: 9 } })
+index({ driven: 1, valid: true, rate: { $gte: 8 } })
 
 // todo
 // 统一一下打印信息

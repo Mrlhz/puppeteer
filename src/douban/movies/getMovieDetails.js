@@ -6,6 +6,7 @@ const { Browser } = require('../../helper/browser')
 const { getMovieDetailsHtml } = require('./html/getMovieDetailsHtml')
 const movie = require('../../models/movie')
 const { insertOne, updateOneById } = require('../../mongo/index')
+const { showAll } = require('../util')
 
 /**
  * @description 获取豆瓣电影简介 e.g. `https://movie.douban.com/subject/1307914/`
@@ -52,13 +53,6 @@ async function getMovieDetails(urls, options = {}) {
   await instance.close()
   console.timeEnd('time')
   return items
-}
-
-async function showAll(page, list=[]) {
-  for (const item of list) {
-    let node = await page.$(item)
-    if (node) await page.click(item)
-  }
 }
 
 module.exports = {

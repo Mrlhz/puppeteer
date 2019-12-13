@@ -29,3 +29,18 @@ console.log(name, urls.length) // 编程 1000
 //   name: '输出文件名',
 //   output: books_mdn_data // 存放路径，output下应有temp文件夹
 // })
+
+
+const bookBrief = require('../../models/bookBrief')
+const { callback } = require('../../mongo/index')
+
+async function index(query) {
+  const brief = await bookBrief.find(query, callback).limit(10)
+  const urls = brief.map((item) => item.url)
+  const list = await getBookDetails(urls, { delay: 2000 })
+
+  console.log(brief.length, urls, list)
+  process.exit(0)
+}
+
+index({ driven: 1 })
