@@ -32,6 +32,11 @@ async function getBookDetails(urls, options = {}) {
     await showAll(page, ['.j.a_show_full']) // 内容简介 展开全部
     try {
       const item = await getBookDetailsHtml(page)
+      if (item.doesNotExist) {
+        await updateOneById(bookBrief, item.id, { $set: { valid: false } })
+        console.log(c.yellowBright(item.doesNotExist)) // e.g. 页面不存在 条目不存在
+        continue
+      }
       if(item.errMsg) {
         console.log(c.yellowBright(item.errMsg))
         break
@@ -39,7 +44,7 @@ async function getBookDetails(urls, options = {}) {
       // save
       item.category = tags[i]
       const res = await insertOne(book, item)
-      console.log(res, 'res')
+      // console.log(res, 'res')
       if (res) await updateOneById(bookBrief, item.id, { $set: { driven: 0 } })
       items.push(item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
