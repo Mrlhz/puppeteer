@@ -6,13 +6,14 @@
  */
 async function getBookDetailsHtml(page) {
   try {
-    const html = await page.evaluate(() => {
-      const errMsg = document.querySelector('body').innerText
+    return await page.evaluate(() => {
       if (!document.querySelector('#content .article #info')) {
-        return { doesNotExist: document.title, id: Number(location.href.match(/\/(\d+)\//)[1])}
-      }
-      if (errMsg.indexOf('检测到有异常请求') !== -1) {
-        return {errMsg} // 检测到有异常请求从你的 IP 发出，请 登录 使用豆瓣。
+        const errMsg = document.querySelector('body').innerText
+        if (errMsg.indexOf('检测到有异常请求') !== -1) {
+          return { errMsg } // 检测到有异常请求从你的 IP 发出，请 登录 使用豆瓣。
+        } else {
+          return { doesNotExist: document.title, id: Number(location.href.match(/\/(\d+)\//)[1]) }
+        }
       } else {
         // getHtml
         function getHtml() {
@@ -39,7 +40,7 @@ async function getBookDetailsHtml(page) {
               const index = item.indexOf(':')
               const key = item.substring(0, index)
               const value = item.substring(index + 1).trim()
-  
+
               if (key && map[key]) {
                 if (key === '作者' || key === '译者') {
                   res[map[key]] = value.split(' / ')
@@ -52,7 +53,7 @@ async function getBookDetailsHtml(page) {
             })
           }
           const rating_num = document.querySelector('#content .rating_num')
-  
+
           const a = document.querySelector('a.nbg')
           const image = document.querySelector('a.nbg img')
           const rating_people = document.querySelector('.rating_people span')
@@ -66,7 +67,7 @@ async function getBookDetailsHtml(page) {
           };
           res.rating_people = rating_people ? Number(rating_people.innerText) : ''; // 评价人数
           res.rating = rating_num ? Number(rating_num.innerText) : ''; // 评价人数
-  
+
           res.summary = summary ? summary.innerText.replace('\n\n举报', '').trim() : ''; // 内容简介
 
           return res
@@ -75,7 +76,6 @@ async function getBookDetailsHtml(page) {
         return getHtml()
       }
     })
-    return html
   } catch (e) {
     throw e
   }
