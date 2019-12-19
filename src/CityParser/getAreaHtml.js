@@ -1,79 +1,81 @@
-
 /**
  * @description 获取html内容
  * @param {puppeteer.page} page
- * @todo 容错处理
+ * @todo 容错处理 switch 中获取html可以抽取成一个函数
  * @returns
  */
 async function getAreaHtml(page) {
   try {
-    const result = await page.evaluate(() => {
-      let href = location.href
-      const index = href.lastIndexOf('/')
-      let keys = ['tr.citytr', 'tr.countytr', 'tr.towntr', 'tr.villagetr'].filter((item) => document.querySelector(item))
-      switch (keys[0]) {
-        case 'tr.citytr':
-          return Array.from(document.querySelectorAll('tr.citytr')).map((item) => {
-            let code = item.querySelectorAll('a').item(0).innerText
-            return {
-              code,
-              name: item.querySelectorAll('a').item(1).innerText,
-              url: href.substring(0, index) + '/' + item.querySelectorAll('a').item(1).getAttribute('href'),
-              id: code ? code.substring(0,4) : '',
-              pid: code ? code.substring(0,2) : '' // parentId
-            }
-          })
-        
-        case 'tr.countytr':
-          return Array.from(document.querySelectorAll('tr.countytr')).map((item) => {
-            if (item.querySelectorAll('a').length > 0) {
+    return await page.evaluate(() => {
+      return getHtml()
+      function getHtml() {
+        let href = location.href
+        const index = href.lastIndexOf('/')
+        let keys = ['tr.citytr', 'tr.countytr', 'tr.towntr', 'tr.villagetr'].filter((item) => document.querySelector(item))
+        if (!keys[0]) return { errMsg: document.body.innerText }
+        switch (keys[0]) {
+          case 'tr.citytr':
+            return Array.from(document.querySelectorAll('tr.citytr')).map((item) => {
               let code = item.querySelectorAll('a').item(0).innerText
               return {
                 code,
                 name: item.querySelectorAll('a').item(1).innerText,
-                id: code ? code.substring(0, 6) : '',
-                pid: code ? code.substring(0, 4) : '',
+                id: code ? code.substring(0, 4) : '',
+                pid: code ? code.substring(0, 2) : '', // parentId
                 url: href.substring(0, index) + '/' + item.querySelectorAll('a').item(1).getAttribute('href'),
               }
-            } else {
+            })
+
+          case 'tr.countytr':
+            return Array.from(document.querySelectorAll('tr.countytr')).map((item) => {
+              if (item.querySelectorAll('a').length > 0) {
+                let code = item.querySelectorAll('a').item(0).innerText
+                return {
+                  code,
+                  name: item.querySelectorAll('a').item(1).innerText,
+                  id: code ? code.substring(0, 6) : '',
+                  pid: code ? code.substring(0, 4) : '',
+                  url: href.substring(0, index) + '/' + item.querySelectorAll('a').item(1).getAttribute('href'),
+                }
+              } else {
+                let code = item.querySelectorAll('td').item(0).innerText
+                return {
+                  code,
+                  name: item.querySelectorAll('td').item(1).innerText
+                }
+              }
+            })
+
+          case 'tr.towntr':
+            return Array.from(document.querySelectorAll('tr.towntr')).map((item) => {
+              let code = item.querySelectorAll('a').item(0).innerText
+              return {
+                code,
+                name: item.querySelectorAll('a').item(1).innerText,
+                id: code ? code.substring(0, 9) : '',
+                pid: code ? code.substring(0, 6) : '',
+                url: href.substring(0, index) + '/' + item.querySelectorAll('a').item(1).getAttribute('href'),
+              }
+            })
+
+          case 'tr.villagetr':
+            return Array.from(document.querySelectorAll('tr.villagetr')).map((item) => {
               let code = item.querySelectorAll('td').item(0).innerText
               return {
                 code,
-                name: item.querySelectorAll('td').item(1).innerText
+                id: code ? code : '',
+                pid: code ? code.substring(0, 9) : '',
+                type: item.querySelectorAll('td').item(1).innerText,
+                name: item.querySelectorAll('td').item(2).innerText,
+                todo: 0
               }
-            }
-          })
+            })
 
-        case 'tr.towntr':
-          return Array.from(document.querySelectorAll('tr.towntr')).map((item) => {
-            let code = item.querySelectorAll('a').item(0).innerText
-            return {
-              code,
-              name: item.querySelectorAll('a').item(1).innerText,
-              id: code ? code.substring(0, 9) : '',
-              pid: code ? code.substring(0, 6) : '',
-              url: href.substring(0, index) + '/' +item.querySelectorAll('a').item(1).getAttribute('href'),
-            }
-          })
-
-        case 'tr.villagetr':
-          return Array.from(document.querySelectorAll('tr.villagetr')).map((item) => {
-            let code = item.querySelectorAll('td').item(0).innerText
-            return {
-              code,
-              id: code ? code : '',
-              pid: code ? code.substring(0, 9) : '',
-              type: item.querySelectorAll('td').item(1).innerText,
-              name: item.querySelectorAll('td').item(2).innerText
-            }
-          })
-
-        default:
-          break;
+          default:
+            break;
+        }
       }
-
     })
-    return result
   } catch (e) {
     console.log(e)
   }
