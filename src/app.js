@@ -3,7 +3,9 @@ const Koa = require('koa')
 const Router = require('koa-router')
 const c = require('ansi-colors')
 
-const { db } = require('./mongo/db')
+const { connect } = require('./mongo/db')
+const doubanDb = connect('douban')
+
 const movie = require('../src/models/movie')
 
 const app = new Koa()
@@ -38,4 +40,4 @@ router.get('/v1/movie/top250', (ctx, next) => {
 app.use(router.routes())
 
 app.listen(3000)
-log(c.green(`http://localhost ${port} `) + `${new Date().toLocaleString()}`)
+log(c.green(`http://localhost:${port} `) + `${new Date().toLocaleString()}`)

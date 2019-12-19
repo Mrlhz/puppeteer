@@ -2,10 +2,12 @@ const Koa = require('koa')
 const parser = require('koa-bodyparser')
 const c = require('ansi-colors')
 
-const { db } = require('../src/mongo/db')
 const { catchError } = require('./middlewares/catchError')
 const { initManager } = require('./core/init')
 const asyncLog = require('./middlewares/log')
+
+const { connect } = require('../src/mongo/db')
+const doubanDb = connect('douban')
 
 const app = new Koa()
 
@@ -19,4 +21,4 @@ app.use(parser())
 initManager.initCore(app)
 
 app.listen(port)
-log(c.green(`http://localhost ${port} `) + `${new Date().toLocaleString()}`)
+log(c.green(`http://localhost:${port} `) + `${new Date().toLocaleString()}`)

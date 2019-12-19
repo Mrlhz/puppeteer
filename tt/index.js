@@ -1,12 +1,14 @@
 const process = require('process')
 
-const { db } = require('./db')
+const { connect } = require('../src/mongo/db')
 const { seriesSchema } = require('./models/series')
 const { movieSchema } = require('./models/javbus')
 const { getOne, getLists } = require('./html/javbus')
 const { init } = require('./template')
 
 const log = console.log
+
+const db = connect('javbus')
 
 async function getSeries(options) {
   init({

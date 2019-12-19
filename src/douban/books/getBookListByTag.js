@@ -9,7 +9,9 @@ const { getBookListByTagHtml } = require('./html/getBookListByTag')
 
 const bookBrief = require('../../models/bookBrief')
 const bookTags = require('../../models/bookTags')
-const { db } = require('../../mongo/db') // TODO 统一管理MongoDB
+const { connect } = require('../../mongo/db') // TODO 统一管理MongoDB
+const doubanDb = connect('douban')
+
 const log = console.log
 
 /**

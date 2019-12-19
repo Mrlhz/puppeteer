@@ -7,7 +7,8 @@ const { wait, writeFile } = require('D:/web/myblog/puppeteer/src/helper/tools')
 const { executablePath } = require('@config/index')
 const { getBookTagsHtml, getHotTagsHtml } = require('../html/getBookTagsHtml')
 const bookTags = require('../../../models/bookTags')
-const { db } = require('../../../mongo/db')
+const { connect } = require('../../../mongo/db')
+const doubanDb = connect('douban')
 
 /**
  * @description 保存豆瓣图书标签json `https://book.douban.com/tag/?view=type`

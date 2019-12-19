@@ -5,7 +5,9 @@ const c = require('ansi-colors')
 const { wait, formatTime } = require('../../helper/tools')
 const { Browser } = require('../../helper/browser')
 const { getSearchListHtml } = require('./html/getSearchList')
-const { db } = require('../../mongo/db') // TODO 统一管理MongoDB
+const { connect } = require('../../mongo/db') // TODO 统一管理MongoDB
+const doubanDb = connect('douban')
+
 const searchBook = require('../../models/searchBook')
 const log = console.log
 
