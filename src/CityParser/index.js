@@ -3,38 +3,17 @@ const c = require('ansi-colors')
 const { Browser } = require('../helper/browser')
 const { wait } = require('../helper/tools')
 const { getAreaHtml } = require('./getAreaHtml')
+const { connect } = require('../mongo/db')
 const City = require('../models/city/city')
 
 const log = console.log
-
-function connect(dbName) {
-  const mongoose = require('mongoose')
-
-  const doubanDb = 'mongodb://localhost/' + dbName
-
-  mongoose.set('useFindAndModify', false) // https://mongoosejs.com/docs/deprecations.html
-
-  mongoose.connect(doubanDb, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  }, () => log('mongodb connect success'))
-
-
-  // 让 mongoose 使用全局 Promise 库
-  mongoose.Promise = global.Promise
-  // 取得默认连接
-  const db = mongoose.connection
-
-  // 将连接与错误事件绑定（以获得连接错误的提示）
-  db.on('error', console.error.bind(console, 'MongoDB 连接错误：'))
-}
 
 async function insert(model, list) {
   list = list.map((item) => setData(model, item))
   async function setData(model, item) {
     const m = await model.findOne({ id: item.id })
     if (m) {
-      log(`${c.red('fail')}: ${item.name}(${item.id}) existed`)
+      log(`${c.red('fail')}: ${item.name}(${item.id ? item.id : ''}) existed`)
       return m
     } else {
       const res = await new model(item).save()
@@ -46,9 +25,9 @@ async function insert(model, list) {
   return Promise.all(list)
 }
 
-async function filter() {
+async function filterList() {
   // 值不为null且存在的记录
-  const list = await City.find({ todo: 1, url: { $ne:null, $exists: true } })
+  const list = await City.find({ todo: 1, url: { $ne:'', $exists: true } })
   return list
 }
 
@@ -61,6 +40,7 @@ async function check(todoList) {
   const unfinished = await City.find({ todo: 1, url: { $in: todoListUrls }}) // todo 为0的urls
   const unfinisheList = unfinished.map((item) => item.url)
   const list = todoList.filter((item) => unfinisheList.includes(item.url))
+  if (list.length === 0) return todoList
   return list
 }
 
@@ -76,10 +56,12 @@ async function todo(url) {
  * @returns
  * @todo 
  */
-async function getArea(list) {
+async function getArea(list, options={}) {
+  let { msg = '', delay = 3500 } = options
   const result = []
   const browser = new Browser({})
   let i = 1
+  list = list.filter((item) => item.url)
   const len = list.length
   for (const item of list) {
     const page = await browser.goto(item.url)
@@ -87,25 +69,22 @@ async function getArea(list) {
       let arr = await getAreaHtml(page) // should return array
       if (Array.isArray(arr)) {
         result.push(...arr)
-
         await insert(City, arr)
         await todo(item.url) // 成功访问的url todo值 => 0
       } else if (arr.errMsg) {
         log(c.bgRed(arr.errMsg))
         continue
       }
-
-      log(`${c.bgGreen('done')} ${i++} / ${len}`)
+      log(`${c.bgGreen('done')} ${i++} / ${len} ${c.greenBright(msg)}`)
     } catch (e) {
       console.error(e)
     }
 
-    await wait(3500)
+    if (i > 1 || i < len) await wait(delay)
     await page.close()
   }
 
   await browser.close()
-
   return result
 }
 
@@ -121,8 +100,8 @@ async function index(list) {
   for (let i = 0; i < names.length; i++) {
     let cur = queue.shift()
     // 过滤
-    cur = await check(cur)
-    let item = await getArea(cur)
+    // cur = await check(cur) // bug
+    let item = await getArea(cur, { msg: names[i] })
 
     queue.push(item)
   }
@@ -130,20 +109,21 @@ async function index(list) {
 }
 
 const pca = require('@area/province.min.json')
-let target = pca.filter((item) => item.name === '北京市')
+let target = pca.filter((item) => item.name === '广西壮族自治区')
 
 async function run() {
   // 连接数据库
   await connect('city')
 
-  await index(target)
-  const list = await filter()
-  await getArea(list)
-  // await City.updateMany({ todo: 0 })
+  // await index(target)
 
+  // ----
+
+  const list = await filterList()
+  await getArea(list)
   process.exit(0)
+
+  // await City.updateMany({ todo: 0 })
 }
 
-const bj = require('./data/北京市.json')
-log(bj.length)
-// run()s
+run()
