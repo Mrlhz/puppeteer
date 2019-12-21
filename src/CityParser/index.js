@@ -26,7 +26,7 @@ async function insert(model, list) {
 }
 
 async function filterList() {
-  // 值不为null且存在的记录
+  // 值不为''且存在的记录
   const list = await City.find({ todo: 1, url: { $ne:'', $exists: true } })
   return list
 }
@@ -109,18 +109,22 @@ async function index(list) {
 }
 
 const pca = require('@area/province.min.json')
-let target = pca.filter((item) => item.name === '广西壮族自治区')
+let target = pca.filter((item) => item.code === '45')
 
 async function run() {
   // 连接数据库
+  
   await connect('city')
-
-  // await index(target)
+  console.time('time')
+  await index(target)
+  console.timeEnd('time')
 
   // ----
 
+  console.time('filter time')
   const list = await filterList()
   await getArea(list)
+  console.timeEnd('filter time')
   process.exit(0)
 
   // await City.updateMany({ todo: 0 })
