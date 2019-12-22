@@ -108,6 +108,7 @@ async function getProvinceHtml(page) {
         let link = item.getAttribute('href')
         return {
           name: item.innerText.replace('\n', ''),
+          id: link.split('.')[0],
           code: link.split('.')[0],
           url: 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/' + link
         }

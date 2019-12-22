@@ -5,25 +5,9 @@ const { wait } = require('../helper/tools')
 const { getAreaHtml } = require('./getAreaHtml')
 const { connect } = require('../mongo/db')
 const City = require('../models/city/city')
+const { insert } = require('./util')
 
 const log = console.log
-
-async function insert(model, list) {
-  list = list.map((item) => setData(model, item))
-  async function setData(model, item) {
-    const m = await model.findOne({ id: item.id })
-    if (m) {
-      log(`${c.red('fail')}: ${item.name}(${item.id ? item.id : ''}) existed`)
-      return m
-    } else {
-      const res = await new model(item).save()
-      log(c.green('insert success:'), res.name, res.id)
-      return res
-    }
-  }
-
-  return Promise.all(list)
-}
 
 async function filterList() {
   // 值不为''且存在的记录
@@ -69,7 +53,7 @@ async function getArea(list, options={}) {
       let arr = await getAreaHtml(page) // should return array
       if (Array.isArray(arr)) {
         result.push(...arr)
-        await insert(City, arr)
+        await insert(City, arr, { id: 'id', name: 'name' })
         await todo(item.url) // 成功访问的url todo值 => 0
       } else if (arr.errMsg) {
         log(c.bgRed(arr.errMsg))

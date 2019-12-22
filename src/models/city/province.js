@@ -1,29 +1,22 @@
 /**
- * 
+ * http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/index.html
  */
 
 const mongoose = require('mongoose')
 
 const { Schema, model } = mongoose
 
-const citySchema = new Schema({
+const provinceSchema = new Schema({
+  id: String,
   code: String,
   name: String,
-  id: {
-    type: String,
-    default: ''
-  },
-  pid: {
-    type: String,
-    default: ''
-  },
   type: {
     type: String,
-    default: ''
+    default: 'province'
   },
   level: {
     type: Number,
-    default: -1
+    default: 1
   },
   url: {
     type: String,
@@ -35,5 +28,4 @@ const citySchema = new Schema({
   }
 })
 
-
-module.exports = model('City', citySchema)
+module.exports = model('Province', provinceSchema)
