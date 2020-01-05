@@ -15,17 +15,15 @@ const log = console.log
 /**
  * @description 查询字段url存在且不为''的列表记录
  */
-async function unfinishedList() {
+async function unfinishedUrlList() {
   const list = await City.find({ todo: 1, url: { $ne:'', $exists: true } })
   return list
 }
 
-async function findPidList() {}
-
 /**
- * @description 爬取完毕的url todo值 => 0
+ * @description 爬取存到数据库后，设置url todo值 => 0
  */
-async function todo(url) {
+async function updateCityTodoValue(url) {
   return await City.findOneAndUpdate({ url }, { $set: { todo: 0 } })
 }
 
@@ -33,7 +31,7 @@ async function todo(url) {
  * @description 获取html城市信息，存入数据库
  * @param {Array} list
  * @returns
- * @todo
+ * @todo 返回失败的item list
  */
 async function getArea(list, options={}) {
   let { msg = '', delay = 3500 } = options
@@ -49,7 +47,7 @@ async function getArea(list, options={}) {
       if (Array.isArray(arr)) {
         result.push(...arr)
         await insert(City, arr, { id: 'id', name: 'name' })
-        await todo(item.url) // 成功访问的url todo值 => 0
+        await updateCityTodoValue(item.url) // 爬取成功的url todo值 => 0
       } else if (arr.errMsg) {
         log(c.bgRed(arr.errMsg))
         continue
@@ -78,7 +76,7 @@ async function index(list) {
   let names = ['city', 'county', 'town', 'village']
   for (let i = 0; i < names.length; i++) {
     let cur = queue.shift()
-    let item = await getArea(cur, { msg: names[i] })
+    let item = await getArea(cur, { msg: names[i], delay: 1500 })
 
     queue.push(item)
   }
@@ -103,13 +101,8 @@ async function updateProvinceTodo(code) {
   }
 }
 
-async function finished(code) {
-  const res = await Province.findOne({ code })
-  return res
-}
-
-async function unfinished() {
-  const res = await Province.findOne({ todo: 1 })
+async function findProvinceOne(query) {
+  const res = await Province.findOne(query)
   return res
 }
 
@@ -121,16 +114,19 @@ const pca = require('@area/province.min.json')
  * 1. 先查询province 是否完成
  * 2. 如果查询有未爬取完成的list，爬取这些url，todo => 0
  * 3. 否则根据code值开始爬取新的省份数据
- *
+ * @todo 刚好没有未爬取的url list，updateProvinceTodo 不会执行
  */
 async function run() {
   // 连接数据库
   await connect('city')
+  // 处理命令行参数
   let code = argv.code
-  if (!code) code = (await unfinished()).code
-  code = code.toString()
+  if (!code) {
+    let queryResult = await findProvinceOne({ todo: 1 })
+    code = queryResult ? queryResult.code.toString() : '11'
+  }
 
-  let p = await finished(code)
+  let p = await findProvinceOne({ code })
   if (p.todo === 0) {
     console.log(`${p.name} finished`)
     process.exit(0)
@@ -139,13 +135,13 @@ async function run() {
   console.time('unfinished list time')
 
   // 有未爬取的urls
-  let list = await unfinishedList()
+  let list = await unfinishedUrlList()
   if (list.length) {
     let todolist = []
     todolist.push(list)
     while (todolist.length) {
-      await getArea(todolist.shift())
-      let tem =  await unfinishedList()
+      await getArea(todolist.shift(), { delay: 1000 })
+      let tem = await unfinishedUrlList()
       if (tem.length === 0) {
         await updateProvinceTodo(code)
         break
