@@ -34,4 +34,4 @@ const result = data.reduce((acc, cur) => {
 }, [])
 
 
-// console.log(result);
+console.log(result)

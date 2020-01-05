@@ -19,17 +19,17 @@ async function save(data = {}) {
   process.exit(0)
 }
 
-const magnet = 'magnet:?xt=urn:btih:6E9D96EF83B708774E11C35FCE0BC56B3E62B064'
+const magnet = ''
 // const obj = {
-//   title: '91秦先生全部作品21部全集',
-//   info: '91秦先生全部作品21部全集',
+//   title: '',
+//   info: '',
 //   magnet,
 //   hash: magnet.split(':')[3],
 //   stars: [{
-//     name: '91秦先生',
+//     name: '',
 //     url: ''
 //   }],
-//   type: ['91秦先生', '91'],
+//   type: ['', '91'],
 //   images: ['']
 // }
 
