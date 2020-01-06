@@ -27,6 +27,7 @@ async function getBookDetails(urls, options = {}) {
   })
 
   for (let i = 0; i < len; i++) {
+    let id = Number.parseInt(urls[i].match(/\/(\d+)\//)[1])
     const page = await instance.goto(urls[i]) // 'proxy'
     console.log('title', await page.title())
     await showAll(page, ['.j.a_show_full']) // 内容简介 展开全部
@@ -45,7 +46,10 @@ async function getBookDetails(urls, options = {}) {
       item.category = tags[i]
       const res = await insertOne(book, item)
       // console.log(res, 'res')
-      if (res) await updateOneById(bookBrief, item.id, { $set: { driven: 0 } })
+      if (res) {
+        id = id !== item.id ? id : item.id // if true: url redirect
+        await updateOneById(bookBrief, id, { $set: { driven: 0 } })
+      }
       items.push(item)
       console.log(`${c.bgGreen('done')} ${(i + 1)}/${len}`)
     } catch (e) {

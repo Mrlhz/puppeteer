@@ -38,3 +38,12 @@
 > 豆瓣封IP，白天一分钟可以访问40次，晚上一分钟可以访问60次，超过限制次数就会封IP
 
 - [爬虫项目需求分析](https://edu.csdn.net/notebook/python/week11/6.html)
+
+### 图书ID变化
+
+```
+图书url有变动
+https://book.douban.com/subject/3228470/ => redirect to  https://book.douban.com/subject/34912074/
+https://book.douban.com/subject/30313503/ => redirect to https://book.douban.com/subject/26120130/
+id change
+```
