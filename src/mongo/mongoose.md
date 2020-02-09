@@ -32,7 +32,21 @@ $slice　　　　 |  查询字段集合中的元素（比如从第几个之后�
 ### skip和limit语句
 
 例如跳过3条记录查询其余记录的最前面5条
-`db.bookbriefs.find({}).skip(3).limit(5)`
+```js
+db.bookbriefs.find({}).skip(3).limit(5)
+```
 
 ### 填充对象
+
 - 1、深层属性查询
+
+
+### mongodb中查询返回指定字段
+
+```js
+// 只输出id和title字段，第一个参数为查询条件，空代表查询所有
+db.news.find( {}, { id: 1, title: 1 } )
+// 如果需要输出的字段比较多，不想要某个字段，可以用排除字段的方法
+// 不输出内容字段，其它字段都输出
+db.news.find( {}, {content: 0 } )
+```
