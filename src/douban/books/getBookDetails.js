@@ -19,7 +19,7 @@ const { showAll } = require('../util')
  */
 async function getBookDetails(urls, options = {}) {
   console.time('time')
-  const { delay = 3000, tags = [] } = options
+  const { delay = [], tags = [] } = options
   const len = urls.length
   let items = []
   const instance = new Browser({
@@ -55,7 +55,7 @@ async function getBookDetails(urls, options = {}) {
     } catch (e) {
       console.log(`${c.bgGreen('fail')} ${(i + 1)}/${len}`)
     }
-    if (len > 1) await wait(delay)
+    if (len > 1 && i < len - 1) await wait(delay[i] || 3000)
     await page.close()
   }
 

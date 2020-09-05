@@ -108,3 +108,5 @@ use [json-stringify-safe](https://www.npmjs.com/package/json-stringify-safe)
 
 
 - `Error: Execution context was destroyed, most likely because of a navigation.`
+
+- Node下载图片为0字节

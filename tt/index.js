@@ -51,7 +51,10 @@ function setOrigin(oldUrl='', index=3) {
     'https://www.dmmbus.work',
     'https://www.cdnbus.work',
     'https://www.busdmm.work',
-    'https://www.dmmsee.bid'
+    'https://www.dmmsee.bid',
+    'https://www.fanbus.bid',
+    'https://www.fanbus.cc',
+    'https://www.busfan.cc'
   ]
   const start = oldUrl.lastIndexOf('/')
   const av = oldUrl.substring(start)

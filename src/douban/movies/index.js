@@ -42,6 +42,8 @@ async function index(query) {
 
 index({ driven: 1, valid: true, rate: { $gte: 8 } })
 
+// bug https://movie.douban.com/subject/5279662/
+
 // todo
 // 统一一下打印信息
 // 看设计模式
