@@ -29,7 +29,8 @@ async function getHtml(page) {
           }
         })
         // 5. 磁力搜索
-        const search = document.querySelector('.hidden-xs a[href*="/search/"]').getAttribute('href')
+        const searchLink = document.querySelector('.hidden-xs a[href*="/search/"]')
+        const search = searchLink ? searchLink.getAttribute('href') : ''
         // info 678
         const map = { 0: 'av', 1: 'release_date', 2: 'length' }
         const infoMap = {
@@ -101,7 +102,7 @@ module.exports = {
 // function getHtml(params){}
 
 // const selectorMap = {
-//   title: '.container h3', // 
+//   title: '.container h3', //
 //   // ---info---
 //   id, // 识别码、番号
 //   releaseDate, // 发行时间
