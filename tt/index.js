@@ -44,15 +44,21 @@ async function getMovies(options, conditions={ driven: 1 }) {
   return urls
 }
 
-function setOrigin(oldUrl='', index=3) {
+function setOrigin(oldUrl='', index=0) {
   let re = /^https?:\/\/[\w.]+\/([a-zA-Z0-9-]+)$/i // e.g. https://www.javbus.cc/[IPZ-931]
   const origin = [
+    'https://www.fanbus.bid',
+    'https://www.busfan.pw',
+    'https://www.busfan.in',
+    'https://www.busfan.cloud',
+    'https://www.fanbus.us',
+    'https://www.fanbus.icu',
+
     'https://www.seedmm.work',
     'https://www.dmmbus.work',
     'https://www.cdnbus.work',
     'https://www.busdmm.work',
     'https://www.dmmsee.bid',
-    'https://www.fanbus.bid',
     'https://www.fanbus.cc',
     'https://www.busfan.cc'
   ]
@@ -78,7 +84,7 @@ const options = {
   task: 'series',
   filePath: 'D:/md/avmoo',
   print: false,
-  origin: false, // 更改url origin
+  origin: true, // 更改url origin
   showall: false, // 全部影片
   ...params
 }

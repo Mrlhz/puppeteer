@@ -3,7 +3,7 @@ const util = require('util')
 
 const c = require('ansi-colors')
 
-const { saveImage, wait, mkdirSync, exists,writeFile } = require('./tools')
+const { saveImage, wait, mkdirSync, exists, writeFile } = require('./tools')
 
 // https://www.meitulu.com/t/miyu-suenaga/
 // e.g. https://mtl.gzhuibei.com/images/img/9910/1.jpg
@@ -22,7 +22,7 @@ function wrapList(list=[], dir='') {
     const start = url.lastIndexOf('/')
     return url.substring(start + 1)
   }
-  
+
   return list.map((item) => {
     return {
       name: name(item),
@@ -89,7 +89,21 @@ function run(file, baseDir='D:/Yui Aragaki') {
   console.log(n)
 
   // const list = require(`./[${file}]pics.json`)
+
+  // const process = require('process')
+
+  // let { start, end } = process.argv.slice(2).reduce((acc, cur) => {
+  //   // acc.start = cur
+  //   let [key, value] = cur.split('=')
+  //   if (key === 'n') {
+  //     let [start, end] = value.split(',')
+  //     acc.start = Number.parseInt(start) || 0
+  //     acc.end = Number.parseInt(end) || 1000
+  //   }
+  //   return acc
+  // }, {})
+  // index(list.slice(start, end), 10)
   index(genList, 100)
 }
 // run('森萝财团')
-run('桜桃喵')
+// run('桜桃喵')

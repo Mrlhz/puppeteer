@@ -7,46 +7,52 @@ const City = require('../models/city/city')
 const { writeFile } = require('../helper/tools')
 
 function handle(list) {
-  const data = list.map((item) => {
+  return list.map((item) => {
     const levels = { 2: 1, 4: 2, 6: 3, 9: 4, 12: 5 }
-    const types = {
-      2: '',
-      4: 'city',
-      6: 'county',
-      9: 'town',
-      12: 'village'
-    }
+    const types = { 2: '', 4: 'city', 6: 'county', 9: 'town', 12: 'village' }
 
     item.type = item.type ? item.type : types[item.id.length]
     item.level = item.level ? item.level : levels[item.id.length]
 
     return item
   })
-
-  return data
 }
 
 /**
  * @description 数据库查询相应数据并返回
  * @param {Object} params
  */
-async function generatorList(params={}) {
-  const { conditions , projection = null, treeRoot, options } = params
-  const list = await City.find(conditions, projection)
-  console.log(list.length, list[15])
-
-  return handle(list)
+async function findList(params={}) {
+  const { conditions , projection = null } = params
+  return await City.find(conditions, projection)
 }
 
-async function generatorTreeList(list=[], root) {
-  console.time('time')
-  if (!Array.isArray(list)) return
+async function generatorMinList(list=[], root) {
+  await writeFile({
+    fileName: root + '.min.json',
+    data: list,
+    output: __dirname
+  })
+}
 
+async function generatorHashList(list=[], root) {
   const hash = {}
   for (const item of list) {
     hash[item.id] = item
   }
 
+  await writeFile({
+    fileName: root + '.hash.json',
+    data: hash,
+    output: __dirname
+  })
+
+  return hash
+}
+
+async function generatorTreeList(list=[], hash, root) {
+  console.time('time')
+  if (!Array.isArray(list)) return
   const res = list.reduce((acc, cur) => {
     let pid = cur.pid
     let parent = hash[pid]
@@ -60,19 +66,6 @@ async function generatorTreeList(list=[], root) {
   }, [])
 
   await writeFile({
-    fileName: root + '.min.json',
-    data: list,
-    output: __dirname
-  })
-
-  await writeFile({
-    fileName: root + '.hash.min.json',
-    data: hash,
-    output: __dirname
-  })
-
-  console.log(res)
-  await writeFile({
     fileName: root + '.tree.min.json',
     data: res,
     output: __dirname
@@ -83,22 +76,27 @@ async function generatorTreeList(list=[], root) {
 }
 
 async function run(root) {
-
-  const res = await generatorList({
+  const list = await findList({
     conditions: { code: new RegExp('^' + root) }, // /^12/
-    projection: { id: 1, pid: 1, code: 1, name: 1, _id: 0 },
-    treeRoot: root
+    // projection: { id: 1, pid: 1, code: 1, name: 1, _id: 0 },
+    projection: { url: 0, __v: 0, _id: 0, todo: 0 }
   })
 
-  const tree = await generatorTreeList(res, root)
+  await generatorMinList(list, root)
+
+  const hash = await generatorHashList(list, root)
+
+  // TODO
+  const tree = await generatorTreeList(list, hash, root)
 
   console.log(tree)
 
   process.exit(0)
 }
 
-// run('45')
+// run('11')
 
 // todo
-// const list = require('./12.min.json')
-// generatorTreeList(list, '12')
+const list = require('./11.min.json')
+const hash = require('./11.hash.json')
+generatorTreeList(list, hash, '11')
