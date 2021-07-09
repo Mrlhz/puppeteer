@@ -28,7 +28,7 @@ var p = {
 }
 
 
-// 开车
+// 开车 将文档series中的作品集合简略信息，遍历存到movies文档中
 async function getMovies(options, conditions={ driven: 1 }) {
   const { limit = 30, origin } = options
   const data = await seriesSchema.find(conditions).limit(limit)
@@ -44,7 +44,21 @@ async function getMovies(options, conditions={ driven: 1 }) {
   return urls
 }
 
-function setOrigin(oldUrl='', index=0) {
+function getUrlList(origin = []) {
+  return origin.reduce((acc, cur) => {
+    const name = cur.split('.')
+    const domain1 = name[1]
+    const domain2 = name.slice(1).join('.')
+    if (!acc[domain1]) {
+      acc[domain1] = cur
+    } else {
+      acc[domain2] = cur
+    }
+    return acc
+  }, {})
+}
+
+function setOrigin(oldUrl='', name='busjav') {
   let re = /^https?:\/\/[\w.]+\/([a-zA-Z0-9-]+)$/i // e.g. https://www.javbus.cc/[IPZ-931]
   const origin = [
     'https://www.fanbus.bid',
@@ -60,11 +74,17 @@ function setOrigin(oldUrl='', index=0) {
     'https://www.busdmm.work',
     'https://www.dmmsee.bid',
     'https://www.fanbus.cc',
-    'https://www.busfan.cc'
+    'https://www.busfan.cc',
+    'https://www.busjav.blog',
+    'https://www.javbus.com',
+    'https://www.busfan.bar',
+    'https://www.buscdn.xyz',
+    'https://www.javbus.bar'
   ]
+  const urls = getUrlList(origin)
   const start = oldUrl.lastIndexOf('/')
   const av = oldUrl.substring(start)
-  return origin[index] + av
+  return urls[name] + av
 }
 
 let conditions = {}
@@ -100,7 +120,7 @@ if (options.task === 'series') {
 // process.exit(0)
 
 // series 已有磁力
-// node tt\index.js urls=https://avmask.com/cn/star/9c786fb6e8c34746 series=河北彩花
+// node index.js urls=https://avmask.com/cn/star/9c786fb6e8c34746 series=河北彩花
 
 // movies
 // node index.js task=movies limit=25
