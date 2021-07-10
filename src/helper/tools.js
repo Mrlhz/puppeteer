@@ -2,6 +2,8 @@ const fs = require('fs')
 const path = require('path')
 const http = require('http')
 const https = require('https')
+const request = require('request')
+
 
 const c = require('ansi-colors')
 
@@ -38,12 +40,12 @@ async function wait(timestamp=3000, islog=true, t='') {
  * @returns
  */
 function writeFile(options = {}) {
-  // output为空时默认存放路径为 data  D:/.../puppeteer/data 
+  // output为空时默认存放路径为 data  D:/.../puppeteer/data
   let { fileName = '未命名' + Date.now(), data = '', output = '.', encoding = 'utf8' } = options
   // log('output', output)
   output = output ? path.resolve(output, fileName) : path.resolve(__dirname, '../../data', fileName)
   data = typeof data === 'string' ? data : JSON.stringify(data)
-  
+
   // content = content.replace(/\n\r/gi, '').replace(/\n/gi, '').replace(/\r/gi, '')
 
   return new Promise((resolve, reject) => {
@@ -121,7 +123,7 @@ const formatNumber = n => {
 /**
  * @description 创建文件夹，返回文件夹绝对路径
  * @param {String} pathName  A path to a file. If a URL is provided, it must use the file: protocol.
- * @returns {String} path 
+ * @returns {String} path
  */
 function mkdirSync(pathName) {
   if (fs.existsSync(pathName)) {
@@ -137,7 +139,7 @@ function mkdirSync(pathName) {
  * @description 读取目录的内容
  * @param { String | Buffer | URL } dir A path to a file. If a URL is provided, it must use the file:protocol.
  * @param { Object } [options={}] The encoding (or an object specifying the encoding), used as the encoding of the result. If not provided, 'utf8' is used.
- * @returns 
+ * @returns
  */
 function readDirFiles(dir, options={}) {
   let { withFileTypes = false, encoding = 'utf8' } = options
@@ -170,10 +172,11 @@ function type(obj) {
  * @param {String} dir 保存文件目录
  * @param {String|Number} [name=Date.now()] 文件名
  */
-function saveImage(url, dir, name=Date.now()) {
+function saveImage(url, dir, fileName=Date.now()) {
   if (isImage(url)) {
     const mod = /^https:/.test(url) ? https: http
     const ext = path.extname(url) || '.webp'
+    const { name } = path.parse(fileName)
     const file = path.join(dir, `${name}${ext}`)
     log(`${c.bgGreen('fetch')} ${url}`)
 
@@ -185,6 +188,35 @@ function saveImage(url, dir, name=Date.now()) {
     })
   }
 }
+
+function downloadImage(url, dir, fileName=Date.now()) {
+  return new Promise(resolve => {
+    if (isImage(url)) {
+      const ext = path.extname(url) || '.webp'
+      const { name } = path.parse(fileName)
+      const file = path.join(dir, `${name}${ext}`)
+      log(`${c.bgGreen('fetch')} ${url}`)
+      // request({url}).pipe(
+      //   fs.createWriteStream(file).on('close', (err) => {
+      //     log(file, 'finish')
+      //     err && log(err, 'err')
+      //     resolve('finish')
+      //   })
+      // )
+
+      const writeStream = fs.createWriteStream(file, { autoClose: true })
+      request({url}).pipe(writeStream)
+      writeStream.on('finish', (err) => {
+        log(file, 'finish')
+        err && log(err, 'err')
+        // writeStream.end() // autoClose为false 时可以使用
+        resolve('finish')
+      })
+    }
+  })
+}
+
+
 
 function isImage(url) {
   return /\.(jpg|png|gif|jpeg|webp)$/.test(url)
@@ -209,6 +241,35 @@ function padzeros(input = '', n = 2) {
   return str
 }
 
+/**
+ * @description 获取一个字符串URL的域名，主域等信息
+ * @param {*} url
+ * @returns
+ */
+function getLocation(url) {
+  // if (url) {
+  //   let aDom = document.createElement('a')
+  //   aDom.href = url
+  //   let obj = {
+  //     hostname: aDom.hostname,
+  //     host: aDom.host,
+  //     origin: aDom.origin,
+  //     protocol: aDom.protocol,
+  //     pathname: aDom.pathname,
+  //     hash: aDom.hash
+  //   }
+  //   const re = /([a-z0-9][a-z0-9\-]*?\.(?:com\.cn|net\.cn|org\.cn|com\.au|imipo\.shop|com|cn|co|net|org|gov|cc|biz|info|hn|xyz|hk|icu|us|mobi|art|wang|me|so|top|win|vip|ltd|red|ru|ac\.cn|xn--kput3i|xin|xn--3ds443g|shop|site|club|fun|online|link|gov\.cn|name|pro|work|tv|kim|group|tech|store|cx|ren|ink|pub|live|wiki|design|xn--fiq228c5hs|xn--6qq986b3xl|xn--fiqs8s|xn--ses554g|xn--hxt814e|xn--55qx5d|xn--io0a7i|xn--3bst00m)(?:\.(?:cn|jp))?)$/
+  //   let Domain = obj.hostname.match(re)
+  //   if (Domain) {
+  //     obj.domain = Domain[0]
+  //   }
+  //   return obj
+  // }
+  if (URL) {
+    return new URL(url)
+  }
+}
+
 module.exports = {
   sleep,
   wait,
@@ -221,5 +282,7 @@ module.exports = {
   exists,
   saveImage,
   isImage,
-  padzeros
+  padzeros,
+  getLocation,
+  downloadImage
 }

@@ -121,7 +121,9 @@ if (options.task === 'series') {
 
 // series 已有磁力
 // node index.js urls=https://avmask.com/cn/star/9c786fb6e8c34746 series=河北彩花
+// node index.js urls=https://www.busjav.blog/series/1dj series=夫の目の前で犯されて
 
 // movies
 // node index.js task=movies limit=25
 // node index.js task=movies limit=25 conditions=av:[番号]
+// node index.js task=movies limit=35 conditions=series:初愛ねんね series=初愛ねんね
