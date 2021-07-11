@@ -29,5 +29,6 @@ const seriesSchema = new Schema({
 
 
 module.exports = {
-  seriesSchema: model('series', seriesSchema)
+  seriesSchema: model('series', seriesSchema), // 演员作品 || 系列
+  idolsSchema: model('idols', seriesSchema) // 演员作品
 }

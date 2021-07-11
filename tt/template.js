@@ -18,14 +18,18 @@ const log = console.log
  * `4. 保存数据到数据库`
  */
 async function init(params) {
-  let { urls, showall, delay = 3000 } = params
-  console.log('params: ', params)
+  let { dataInfo, urls, showall, delay = 3000 } = params
+  console.log('params: ', { ...params, dataInfo: dataInfo ? dataInfo.length: 0 })
   let result = [] // 统一返回数组
   const browser = new Browser({})
 
-  if (Array.isArray(urls)) {
-    for (let i = 0, len = urls.length; i < len; i++) {
-      const url = urls[i]
+  if (Array.isArray(dataInfo)) {
+    for (let i = 0, len = dataInfo.length; i < len; i++) {
+      const url = dataInfo[i].url
+      const { isExist } = await isMovieExist(params, dataInfo[i])
+      if (isExist) {
+        continue
+      }
       const page = await browser.goto(url)
       const items = await template({ page, ...params })
       result.push(...items)
@@ -89,7 +93,7 @@ async function setSeriesData(data, params) {
   const list = filterVR(data)
   try {
     data = list.map((item) => { item.series = params.series; return item })
-    const mask = data.map((item) => setData(getSchema(params.type), item)) // default seriesSchema
+    const mask = data.map((item) => setData(params, item)) // default seriesSchema
     const { length } = await Promise.all(mask)
     log('success', length)
   } catch (e) {
@@ -102,7 +106,7 @@ async function setMoviesData(data, params) {
     const mask = data.map((item) => {
       item['idols'] = params.series
       const _movieSchema = getSchema(params.type)
-      return setData(_movieSchema, item) // default movieSchema
+      return setData(params, item) // default movieSchema
     })
     const [ { av, star } ] = await Promise.all(mask)
     if (star) {
@@ -117,22 +121,29 @@ async function setMoviesData(data, params) {
   }
 }
 
-async function setData(model, item) {
+async function _setData(model, item) {
   // console.log(100, item)
   if (!item.av) return
   const m = await model.findOne({ av: item.av })
   if (m) {
     log(`${c.red('fail')}: ${item.title}(${item.av}) existed`)
-    // if (!m.series) {
-    //   const update = await seriesSchema.findOneAndUpdate({ av: item.av }, { $set: { series: '' } })
-    //   log(update, 'update')
-    // }
     return m
   } else {
     const res = await new model(item).save()
     log(c.green('insert success:'), res.title, res.av)
     return res
   }
+}
+
+async function setData(params, item) {
+  if (!item.av) return
+  const { isExist, model } = await isMovieExist(params, item)
+  if (isExist) {
+    return item
+  }
+  const res = await new model(item).save()
+  log(c.green('insert success:'), res.title, res.av)
+  return res
 }
 
 
@@ -183,6 +194,18 @@ function getSchema(type) {
     starVideo: starVideoSchema
   }
   return schemaMap[type]
+}
+
+async function isMovieExist(params, movieInfo) {
+  let isExist = false
+  const model = getSchema(params.type)
+  console.log(model, params.type)
+  const m = await model.findOne({ av: movieInfo.av })
+  if (m) {
+    log(`${c.red('fail')}: ${movieInfo.title}(${movieInfo.av}) existed`)
+    isExist = true
+  }
+  return { isExist, model }
 }
 
 

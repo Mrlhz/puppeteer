@@ -1,7 +1,7 @@
 const process = require('process')
 
 const { connect } = require('../src/mongo/db')
-const { seriesSchema } = require('./models/series')
+const { seriesSchema, idolsSchema } = require('./models/series')
 const { movieSchema } = require('./models/javbus')
 const { getOne, getLists } = require('./html/javbus')
 const { init } = require('./template')
@@ -30,18 +30,20 @@ var p = {
 
 // 开车 将文档series中的作品集合简略信息，遍历存到movies文档中
 async function getMovies(options, conditions={ driven: 1 }) {
-  const { limit = 30, origin } = options
-  const data = await seriesSchema.find(conditions).limit(limit)
-  let urls = data.map((item) => item.url)
-  urls = origin ? urls.map((url) => setOrigin(url)) : urls
-  console.log(urls);
+  const { limit = 30, origin, type } = options
+  const schema = type === 'starVideo' ? idolsSchema : seriesSchema
+  const data = await schema.find(conditions).limit(limit)
+  // let urls = data.map((item) => item.url)
+  // urls = origin ? urls.map((url) => setOrigin(url)) : urls
+  origin ? data.forEach(item => item.url = setOrigin(item.url)) : ''
   init({
-    urls,
+    // urls,
+    dataInfo: data,
     gethtml: getOne,
     task: 'movies',
     ...options
   })
-  return urls
+  return data
 }
 
 function getUrlList(origin = []) {
@@ -125,6 +127,9 @@ if (options.task === 'series') {
 // node index.js urls=https://www.busjav.blog/star/sl1 series=河北彩花 showall=true
 // node index.js urls=https://www.busjav.blog/series/1dj series=夫の目の前で犯されて
 // node index.js urls=https://www.busjav.blog/star/pmv series=橋本ありな type=idols
+// node index.js urls=https://www.busjav.blog/star/ufk series=月乃ルナ type=idols
+// node index.js urls=https://www.busjav.blog/star/b6a series=辻本杏 type=idols
+// node index.js urls=https://www.busjav.blog/star/b6a series=MOODYZFresh showall=true
 
 // movies
 // node index.js task=movies limit=25
@@ -132,3 +137,5 @@ if (options.task === 'series') {
 // node index.js task=movies limit=1 conditions=series:初愛ねんね series=初愛ねんね
 // node index.js task=movies limit=1 conditions=series:河北彩花 series=河北彩花
 // node index.js task=movies limit=100 conditions=series:橋本ありな series=橋本ありな type=starVideo
+// node index.js task=movies limit=100 conditions=series:月乃ルナ series=月乃ルナ type=starVideo
+// node index.js task=movies limit=100 conditions=series:辻本杏 series=辻本杏 type=starVideo
