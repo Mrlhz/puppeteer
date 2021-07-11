@@ -2,8 +2,8 @@ const path = require('path')
 const process = require('process')
 const c = require('ansi-colors')
 
-const { seriesSchema } = require('./models/series')
-const { movieSchema } = require('./models/javbus')
+const { seriesSchema, idolsSchema } = require('./models/series')
+const { movieSchema, starVideoSchema } = require('./models/javbus')
 
 const { Browser } = require('../src/helper/browser')
 const { wait } = require('../src/helper/tools')
@@ -19,6 +19,7 @@ const log = console.log
  */
 async function init(params) {
   let { urls, showall, delay = 3000 } = params
+  console.log('params: ', params)
   let result = [] // 统一返回数组
   const browser = new Browser({})
 
@@ -36,7 +37,7 @@ async function init(params) {
     while (pageNumber < 500) {
       const url = pageNumber === 1 ? urls : `${urls}/${pageNumber}`
       let page = await browser.goto(url)
-      
+
       await showAll(page, showall) // 全部影片 || 已有磁力
       await wait(showall ? delay - 500 : delay)
 
@@ -60,16 +61,16 @@ async function init(params) {
 /**
  * @description `getHtml`
  * @param {object} params
- * @returns {Array} 
+ * @returns {Array}
  */
 async function template(params) {
   const { page, gethtml, task, series, print, filePath } = params
 
   const data = await gethtml(page)
   if (task === 'series') {
-    await setSeriesData(data, series)
+    await setSeriesData(data, params)
   } else if (task === 'movies') {
-    await setMoviesData(data)
+    await setMoviesData(data, params)
   }
 
   if (print) {
@@ -81,14 +82,14 @@ async function template(params) {
 
 /**
  * @description 保存电影简略信息
- * @param {array} data
- * @param {string} [series='']
+ * @param {Array} data
+ * @param {Object} params
  */
-async function setSeriesData(data, series='') {
+async function setSeriesData(data, params) {
   const list = filterVR(data)
   try {
-    data = list.map((item) => { item.series = series; return item })
-    const mask = data.map((item) => setData(seriesSchema, item))
+    data = list.map((item) => { item.series = params.series; return item })
+    const mask = data.map((item) => setData(getSchema(params.type), item)) // default seriesSchema
     const { length } = await Promise.all(mask)
     log('success', length)
   } catch (e) {
@@ -96,15 +97,20 @@ async function setSeriesData(data, series='') {
   }
 }
 
-async function setMoviesData(data) {
+async function setMoviesData(data, params) {
   try {
-    const mask = data.map((item) => setData(movieSchema, item))
+    const mask = data.map((item) => {
+      item['idols'] = params.series
+      const _movieSchema = getSchema(params.type)
+      return setData(_movieSchema, item) // default movieSchema
+    })
     const [ { av, star } ] = await Promise.all(mask)
     if (star) {
       console.log('update1', av)
       const updated = Date.now() + 8 * 60 * 60 * 1000
-      const update = await seriesSchema.findOneAndUpdate({ av }, { $set: { driven: 0, updated } })
-      log('opdate:', update)
+      const _seriesSchema = getSchema(params.type === 'starVideo' ? 'idols' : 'series')
+      const update = await _seriesSchema.findOneAndUpdate({ av }, { $set: { driven: 0, updated } })
+      // log('opdate:', update)
     }
   } catch (e) {
     log(c.red(e))
@@ -112,7 +118,8 @@ async function setMoviesData(data) {
 }
 
 async function setData(model, item) {
-  if (!item.av) return 
+  // console.log(100, item)
+  if (!item.av) return
   const m = await model.findOne({ av: item.av })
   if (m) {
     log(`${c.red('fail')}: ${item.title}(${item.av}) existed`)
@@ -151,7 +158,7 @@ async function screenshot(pdfParams) {
 
 
 async function showAll(page, showall) {
-  if (showall) {
+  if (showall && page.$('#resultshowall')) {
     const resultshowall = page.$('#resultshowall')
     resultshowall ? page.click('#resultshowall') : ''
   }
@@ -166,6 +173,16 @@ function filterVR(data) {
 
   log(vrs, 'ignore')
   return list
+}
+
+function getSchema(type) {
+  const schemaMap = {
+    'series': seriesSchema,
+    idols: idolsSchema,
+    movie: movieSchema,
+    starVideo: starVideoSchema
+  }
+  return schemaMap[type]
 }
 
 

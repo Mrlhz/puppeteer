@@ -106,6 +106,7 @@ const options = {
   print: false,
   origin: true, // 更改url origin
   showall: false, // 全部影片
+  type: 'series', // 默认数据库集合
   ...params
 }
 
@@ -114,16 +115,20 @@ log(options, conditions)
 if (options.task === 'series') {
   getSeries(options)
 } else if (options.task === 'movies') {
-  Object.keys(conditions).length > 0 ? getMovies(options, conditions): getMovies(options)
+  Object.keys(conditions).length > 0 ? getMovies({ type: 'movie', ...options }, conditions): getMovies(options)
 }
 
 // process.exit(0)
 
 // series 已有磁力
 // node index.js urls=https://avmask.com/cn/star/9c786fb6e8c34746 series=河北彩花
+// node index.js urls=https://www.busjav.blog/star/sl1 series=河北彩花 showall=true
 // node index.js urls=https://www.busjav.blog/series/1dj series=夫の目の前で犯されて
+// node index.js urls=https://www.busjav.blog/star/pmv series=橋本ありな type=idols
 
 // movies
 // node index.js task=movies limit=25
 // node index.js task=movies limit=25 conditions=av:[番号]
-// node index.js task=movies limit=35 conditions=series:初愛ねんね series=初愛ねんね
+// node index.js task=movies limit=1 conditions=series:初愛ねんね series=初愛ねんね
+// node index.js task=movies limit=1 conditions=series:河北彩花 series=河北彩花
+// node index.js task=movies limit=100 conditions=series:橋本ありな series=橋本ありな type=starVideo

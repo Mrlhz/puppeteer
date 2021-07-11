@@ -127,6 +127,7 @@ async function getOne(page) {
           genre,
           ...info,
           ...info1,
+          idols: ''
         }
       }
       return [ getHtml() ]

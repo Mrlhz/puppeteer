@@ -10,6 +10,15 @@ const { Schema, model } = mongoose
 const movieSchema = new Schema({
   title: String,
   screencap: String,
+    // 演员 || 系列
+  idols: {
+    type: String,
+    default: ''
+  },
+  url: {
+    type: String,
+    default: ''
+  },
   star: [{
     name: String,
     url: String,
@@ -87,5 +96,6 @@ const movieSchema = new Schema({
 
 
 module.exports = {
-  movieSchema: model('movie', movieSchema)
+  movieSchema: model('movie', movieSchema),
+  starVideoSchema: model('starVideo', movieSchema)
 }
