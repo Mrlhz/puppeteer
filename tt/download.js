@@ -22,8 +22,18 @@ async function init(params, options) {
   const seriesOutput = path.resolve(publicDirectory, series)
   mkdirSync(seriesOutput) // 创建 演员 || 系列目录
   const data = await queryMovie(params, options)
-
-  await downloadImage(data, { ...options, seriesOutput })
+  // console.log(data, data[0])
+  const { list, JAVIdol, JAVIdols } = findStar(data, series)
+  console.log('data: ', data.length)
+  console.log('list: ', list.length)
+  console.log('JAVIdol: ', JAVIdol.length)
+  console.log('JAVIdols: ', JAVIdols.length)
+  await downloadImage(JAVIdol, { ...options, seriesOutput })
+  if (JAVIdols.length) {
+    const JAVIdolsOuput = path.resolve(publicDirectory, `${series}-JAVIdols`)
+    mkdirSync(JAVIdolsOuput)
+    await downloadImage(JAVIdols, { ...options, seriesOutput: JAVIdolsOuput })
+  }
 }
 
 async function queryMovie(params, options) {
@@ -63,8 +73,24 @@ async function downloadImage(data = [], options = {}) {
     allImages.push(...images)
   }
 
+  console.log('total picture: ', allImages.length)
   const allSettledPromise = all && await Promise.allSettled(allImagesPromise)
   console.log(allSettledPromise.length, allImagesPromise.length, allImages.length)
+  return 0
+}
+
+function findStar(data = [], idols) {
+  const JAVIdols = [] // 多位演员
+  const JAVIdol = []  // 一位演员
+  data.forEach(item => {
+    if (item.star.length === 1) {
+      JAVIdol.push(item)
+    } else {
+      JAVIdols.push(item)
+    }
+  })
+  const list = data.filter(item => item.star.length === 1)
+  return { list, JAVIdol, JAVIdols }
 }
 
 
@@ -74,4 +100,9 @@ async function downloadImage(data = [], options = {}) {
 // init({ 'idols': '辻本杏' }, { series: '辻本杏', all: true })
 // init({ 'idols': '鈴木心春' }, { series: '鈴木心春' })
 // init({ 'idols': '私、実は夫の上司に犯●れ続けてます…' }, { series: '私、実は夫の上司に犯●れ続けてます…', type: 'movie' })
-init({ 'idols': '水卜さくら' }, { series: '水卜さくら', type: 'starVideo' })
+// init({ 'idols': '水卜さくら' }, { series: '水卜さくら', type: 'starVideo' })
+// init({ 'idols': '永野いち夏' }, { series: '永野いち夏', type: 'starVideo' })
+// init({ 'idols': '架乃ゆら' }, { series: '架乃ゆら', type: 'starVideo' })
+// init({ 'idols': 'さくらゆら' }, { series: 'さくらゆら', type: 'starVideo' })
+// init({ 'idols': '松本いちか' }, { series: '松本いちか', type: 'starVideo' }) // todo
+init({ 'idols': '鈴村あいり' }, { series: '鈴村あいり', type: 'starVideo' })
