@@ -28,11 +28,18 @@ async function init(params, options) {
   console.log('list: ', list.length)
   console.log('JAVIdol: ', JAVIdol.length)
   console.log('JAVIdols: ', JAVIdols.length)
-  await downloadImage(JAVIdol, { ...options, seriesOutput })
+  // await downloadImage(JAVIdol, { ...options, seriesOutput })
+  // if (JAVIdols.length) {
+  //   const JAVIdolsOuput = path.resolve(publicDirectory, `合集作品-JAVIdols`)
+  //   mkdirSync(JAVIdolsOuput)
+  //   await downloadImage(JAVIdols, { ...options, seriesOutput: JAVIdolsOuput })
+  // }
   if (JAVIdols.length) {
-    const JAVIdolsOuput = path.resolve(publicDirectory, `${series}-JAVIdols`)
+    const JAVIdolsOuput = path.resolve(publicDirectory, `合集作品-JAVIdols`)
     mkdirSync(JAVIdolsOuput)
-    await downloadImage(JAVIdols, { ...options, seriesOutput: JAVIdolsOuput })
+    await Promise.all([downloadImage(JAVIdol, { ...options, seriesOutput }), downloadImage(JAVIdols, { ...options, seriesOutput: JAVIdolsOuput })])
+  } else {
+    await downloadImage(JAVIdol, { ...options, seriesOutput })
   }
 }
 
@@ -105,4 +112,5 @@ function findStar(data = [], idols) {
 // init({ 'idols': '架乃ゆら' }, { series: '架乃ゆら', type: 'starVideo' })
 // init({ 'idols': 'さくらゆら' }, { series: 'さくらゆら', type: 'starVideo' })
 // init({ 'idols': '松本いちか' }, { series: '松本いちか', type: 'starVideo' }) // todo
-init({ 'idols': '鈴村あいり' }, { series: '鈴村あいり', type: 'starVideo' })
+// init({ 'idols': '鈴村あいり' }, { series: '鈴村あいり', type: 'starVideo' })
+init({ 'idols': '明里つむぎ' }, { series: '明里つむぎ' })

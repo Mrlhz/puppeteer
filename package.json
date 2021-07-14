@@ -34,5 +34,8 @@
     "@tutorial": "./src/config",
     "@data": "./data",
     "@area": "./data/area"
+  },
+  "dependencies": {
+    "download": "^8.0.0"
   }
 }
