@@ -24,9 +24,11 @@ async function init(params) {
   const browser = new Browser({})
 
   if (Array.isArray(dataInfo)) {
+    const model = getMoiveSchema(params.type)
+    console.log('init ', model)
     for (let i = 0, len = dataInfo.length; i < len; i++) {
       const url = dataInfo[i].url
-      const { isExist } = await isMovieExist(params, dataInfo[i])
+      const { isExist } = await isMovieExist(model, dataInfo[i])
       if (isExist) {
         continue
       }
@@ -105,7 +107,6 @@ async function setMoviesData(data, params) {
   try {
     const mask = data.map((item) => {
       item['idols'] = params.series
-      const _movieSchema = getSchema(params.type)
       return setData(params, item) // default movieSchema
     })
     const [ { av, star } ] = await Promise.all(mask)
@@ -137,7 +138,10 @@ async function _setData(model, item) {
 
 async function setData(params, item) {
   if (!item.av) return
-  const { isExist, model } = await isMovieExist(params, item)
+  const model = getMoiveSchema(params.type) || getSchema(params.type)
+  console.log('schema', model)
+
+  const { isExist } = await isMovieExist(model, item)
   if (isExist) {
     return item
   }
@@ -186,26 +190,32 @@ function filterVR(data) {
   return list
 }
 
-function getSchema(type) {
+function getMoiveSchema(type) {
   const schemaMap = {
-    'series': seriesSchema,
-    idols: idolsSchema,
     movie: movieSchema,
     starVideo: starVideoSchema
   }
+  console.log(`getMoiveSchema: ${type}`, schemaMap[type])
   return schemaMap[type]
 }
 
-async function isMovieExist(params, movieInfo) {
+function getSchema(type) {
+  const schemaMap = {
+    'series': seriesSchema,
+    idols: idolsSchema
+  }
+  console.log(`getSchema: ${type}`, schemaMap[type])
+  return schemaMap[type]
+}
+
+async function isMovieExist(model, movieInfo) {
   let isExist = false
-  const model = getSchema(params.type)
-  console.log(model, params.type)
   const m = await model.findOne({ av: movieInfo.av })
   if (m) {
     log(`${c.red('fail')}: ${movieInfo.title}(${movieInfo.av}) existed`)
     isExist = true
   }
-  return { isExist, model }
+  return { isExist }
 }
 
 

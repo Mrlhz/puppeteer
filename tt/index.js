@@ -108,16 +108,18 @@ const options = {
   print: false,
   origin: true, // 更改url origin
   showall: false, // 全部影片
-  type: 'series', // 默认数据库集合
+  type: '', // 默认数据库集合
   ...params
 }
 
 log(options, conditions)
 
 if (options.task === 'series') {
+  options.type = options.type || 'series'
   getSeries(options)
 } else if (options.task === 'movies') {
-  Object.keys(conditions).length > 0 ? getMovies({ type: 'movie', ...options }, conditions): getMovies(options)
+  options.type = options.type || 'movie'
+  Object.keys(conditions).length > 0 ? getMovies({ ...options }, conditions): getMovies(options)
 }
 
 // process.exit(0)
@@ -130,6 +132,12 @@ if (options.task === 'series') {
 // node index.js urls=https://www.busjav.blog/star/ufk series=月乃ルナ type=idols
 // node index.js urls=https://www.busjav.blog/star/b6a series=辻本杏 type=idols
 // node index.js urls=https://www.busjav.blog/star/b6a series=MOODYZFresh showall=true
+// node index.js urls=https://www.busjav.blog/star/rul series=高杉麻里
+// node index.js urls=https://www.busjav.blog/series/3q3 series=私、実は夫の上司に犯●れ続けてます…
+// node index.js urls=https://www.busjav.blog/star/qs6 series=明里つむぎ
+// node index.js urls=https://www.busjav.blog/star/1fw series=つぼみ
+// node index.js urls=https://www.busjav.blog/star/vb3 series=松本いちか
+// node index.js urls=https://www.busjav.blog/star/w5a series=乙白さやか type=idols
 
 // movies
 // node index.js task=movies limit=25
@@ -139,3 +147,9 @@ if (options.task === 'series') {
 // node index.js task=movies limit=100 conditions=series:橋本ありな series=橋本ありな type=starVideo
 // node index.js task=movies limit=100 conditions=series:月乃ルナ series=月乃ルナ type=starVideo
 // node index.js task=movies limit=100 conditions=series:辻本杏 series=辻本杏 type=starVideo
+// node index.js task=movies limit=100 conditions=series:叶恵みつは series=叶恵みつは type=starVideo
+// node index.js task=movies limit=1000 conditions=series:私、実は夫の上司に犯●れ続けてます… series=私、実は夫の上司に犯●れ続けてます…
+// node index.js task=movies limit=1000 conditions=series:明里つむぎ series=明里つむぎ
+// node index.js task=movies limit=1000 conditions=series:高杉麻里 series=高杉麻里
+// node index.js task=movies limit=1000 conditions=series:つぼみ series=つぼみ
+
