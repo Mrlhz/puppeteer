@@ -19,13 +19,13 @@ const log = console.log
  */
 async function init(params) {
   let { dataInfo, urls, showall, delay = 3000 } = params
-  console.log('params: ', { ...params, dataInfo: dataInfo ? dataInfo.length: 0 })
+  console.log('params: ', { ...params })
   let result = [] // 统一返回数组
   const browser = new Browser({})
 
   if (Array.isArray(dataInfo)) {
     const model = getMoiveSchema(params.type)
-    console.log('init ', model)
+    console.log(c.greenBright('init'), model, dataInfo)
     for (let i = 0, len = dataInfo.length; i < len; i++) {
       const url = dataInfo[i].url
       const { isExist } = await isMovieExist(model, dataInfo[i])
@@ -195,7 +195,7 @@ function getMoiveSchema(type) {
     movie: movieSchema,
     starVideo: starVideoSchema
   }
-  console.log(`getMoiveSchema: ${type}`, schemaMap[type])
+  console.log(`run getMoiveSchema: ${type}`, schemaMap[type])
   return schemaMap[type]
 }
 
@@ -204,7 +204,7 @@ function getSchema(type) {
     'series': seriesSchema,
     idols: idolsSchema
   }
-  console.log(`getSchema: ${type}`, schemaMap[type])
+  console.log(`run getSchema: ${type}`, schemaMap[type])
   return schemaMap[type]
 }
 

@@ -4,6 +4,7 @@ const { connect } = require('../src/mongo/db')
 const { seriesSchema, idolsSchema } = require('./models/series')
 const { movieSchema } = require('./models/javbus')
 const { getOne, getLists } = require('./html/javbus')
+const { setOrigin, getInputParams } = require('./utils/index')
 const { init } = require('./template')
 
 const log = console.log
@@ -46,61 +47,7 @@ async function getMovies(options, conditions={ driven: 1 }) {
   return data
 }
 
-function getUrlList(origin = []) {
-  return origin.reduce((acc, cur) => {
-    const name = cur.split('.')
-    const domain1 = name[1]
-    const domain2 = name.slice(1).join('.')
-    if (!acc[domain1]) {
-      acc[domain1] = cur
-    } else {
-      acc[domain2] = cur
-    }
-    return acc
-  }, {})
-}
-
-function setOrigin(oldUrl='', name='busjav') {
-  let re = /^https?:\/\/[\w.]+\/([a-zA-Z0-9-]+)$/i // e.g. https://www.javbus.cc/[IPZ-931]
-  const origin = [
-    'https://www.fanbus.bid',
-    'https://www.busfan.pw',
-    'https://www.busfan.in',
-    'https://www.busfan.cloud',
-    'https://www.fanbus.us',
-    'https://www.fanbus.icu',
-
-    'https://www.seedmm.work',
-    'https://www.dmmbus.work',
-    'https://www.cdnbus.work',
-    'https://www.busdmm.work',
-    'https://www.dmmsee.bid',
-    'https://www.fanbus.cc',
-    'https://www.busfan.cc',
-    'https://www.busjav.blog',
-    'https://www.javbus.com',
-    'https://www.busfan.bar',
-    'https://www.buscdn.xyz',
-    'https://www.javbus.bar'
-  ]
-  const urls = getUrlList(origin)
-  const start = oldUrl.lastIndexOf('/')
-  const av = oldUrl.substring(start)
-  return urls[name] + av
-}
-
-let conditions = {}
-const params = process.argv.slice(2).reduce((acc, cur) => {
-  let [key, value] = cur.split('=')
-  if (key === 'conditions') {
-    const [k, v] = value.split(':')
-    conditions[k] = v
-  } else {
-    !Number.isNaN(Number(value)) ? value = Number(value) : value
-    acc[key] = value
-  }
-  return acc
-}, {})
+const { params, conditions } = getInputParams()
 
 const options = {
   task: 'series',
@@ -111,6 +58,7 @@ const options = {
   type: '', // 默认数据库集合
   ...params
 }
+
 
 log(options, conditions)
 
@@ -138,6 +86,8 @@ if (options.task === 'series') {
 // node index.js urls=https://www.busjav.blog/star/1fw series=つぼみ
 // node index.js urls=https://www.busjav.blog/star/vb3 series=松本いちか
 // node index.js urls=https://www.busjav.blog/star/w5a series=乙白さやか type=idols
+// node index.js urls=https://www.busjav.blog/star/t14 series=坂道みる
+// node index.js urls=https://www.busjav.blog/star/ucw series=日泉舞香 type=idols
 
 // movies
 // node index.js task=movies limit=25
@@ -152,4 +102,6 @@ if (options.task === 'series') {
 // node index.js task=movies limit=1000 conditions=series:明里つむぎ series=明里つむぎ
 // node index.js task=movies limit=1000 conditions=series:高杉麻里 series=高杉麻里
 // node index.js task=movies limit=1000 conditions=series:つぼみ series=つぼみ
-
+// node index.js task=movies limit=1000 conditions=series:坂道みる series=坂道みる
+// node index.js task=movies limit=1000 conditions=series:日泉舞香 series=日泉舞香 type=starVideo
+// node index.js task=movies limit=1000 conditions=series:乙白さやか series=乙白さやか type=starVideo
