@@ -34,11 +34,8 @@ async function getMovies(options, conditions={ driven: 1 }) {
   const { limit = 30, origin, type } = options
   const schema = type === 'starVideo' ? idolsSchema : seriesSchema
   const data = await schema.find(conditions).limit(limit)
-  // let urls = data.map((item) => item.url)
-  // urls = origin ? urls.map((url) => setOrigin(url)) : urls
   origin ? data.forEach(item => item.url = setOrigin(item.url)) : ''
   init({
-    // urls,
     dataInfo: data,
     gethtml: getOne,
     task: 'movies',
@@ -105,3 +102,4 @@ if (options.task === 'series') {
 // node index.js task=movies limit=1000 conditions=series:坂道みる series=坂道みる
 // node index.js task=movies limit=1000 conditions=series:日泉舞香 series=日泉舞香 type=starVideo
 // node index.js task=movies limit=1000 conditions=series:乙白さやか series=乙白さやか type=starVideo
+
