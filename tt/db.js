@@ -1,40 +1,32 @@
-const process = require('process')
+const mongoose = require('mongoose')
 
-const c = require('ansi-colors')
+function connect(database) {
+  if (!database) throw new Error('database can\'t be null or undefined')
+  const connectDb = 'mongodb://localhost/' + database
+  mongoose.set('useFindAndModify', false) // https://mongoosejs.com/docs/deprecations.html
 
-// const doubanDb = 'mongodb://localhost/bt'
-const btbook = require('./models/bt')
+  // 让 mongoose 使用全局 Promise 库
+  mongoose.Promise = global.Promise
 
-const log = console.log
+  // 取得默认连接
+  const db = mongoose.connection
 
-async function save(data = {}) {
-  const hash = await btbook.findOne({ hash: data.hash })
-  if (!hash) {
-    const res = await new btbook(obj).save()
-    console.log(c.bgGreen('insert'), res)
-  } else {
-    console.log(c.bgRed('exist'), hash)
+  // 将连接与错误事件绑定（以获得连接错误的提示）
+  db.on('error', console.error.bind(console, 'MongoDB 连接错误：'))
+  const options = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
   }
-
-  process.exit(0)
+  return new Promise((resolve, reject) => {
+    mongoose.connect(connectDb, options, () => {
+      console.log('mongodb connect success: ' + database)
+      resolve(db)
+    }, err => {
+      reject(err)
+    })
+  })
 }
 
-const magnet = ''
-// const obj = {
-//   title: '',
-//   info: '',
-//   magnet,
-//   hash: magnet.split(':')[3],
-//   stars: [{
-//     name: '',
-//     url: ''
-//   }],
-//   type: ['', '91'],
-//   images: ['']
-// }
-
-// save(obj)
-
 module.exports = {
-
+  connect
 }
