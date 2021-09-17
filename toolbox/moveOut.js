@@ -31,11 +31,12 @@ function findDirectorySync(dirs) {
     }
     if (Array.isArray(file)) {
       return path.dirname(file[0])
-    } else if (fs.statSync(file).isFile()) {
+    }
+    if (fs.statSync(file).isFile()) {
       return file
     } else {
-      console.log('else')
-      break
+      console.log('else', file)
+      // break
     }
   }
 }
@@ -46,7 +47,7 @@ function genOutputPath(src, dest) {
   console.log(files.length)
   const list = files.map(item => {
     const file = findDirectorySync(item)
-    console.log(item, 'file:', file)
+    // console.log(item, 'file:', file)
     const { base } = path.parse(file)
     return {
       src: file,
@@ -57,16 +58,19 @@ function genOutputPath(src, dest) {
 }
 
 async function moveOutNextLevelDirectory(src, dest) {
+  if (!fs.pathExistsSync(src) || !fs.pathExistsSync(dest)) return
   const list = genOutputPath(src, dest)
-  console.log(list)
+  // console.log(list)
   const tasks = list.map(item => move(item.src, item.dest))
   await Promise.allSettled(tasks)
 }
 
 // let dirname = 'E:\\图小乐\\天天一元\\特写集'
-let dirname = 'E:\\图小乐\\天天一元\\simu'
-const dest = 'E:\\图小乐\\天天一元\\_simu'
-// moveOutNextLevelDirectory(dirname, dirname)
+{
+  let dirname = 'E:\\图小乐\\天天一元\\simu'
+  const dest = 'E:\\图小乐\\天天一元\\_simu'
+  // moveOutNextLevelDirectory(dirname, dirname)
+}
 
 
 // dirname = 'E:\\图小乐\\天天一元\\SMTX\\SMTX034'
@@ -76,7 +80,7 @@ const dest = 'E:\\图小乐\\天天一元\\_simu'
 // console.log(list)
 
 {
-  let src = `E:\\图小乐\\微博COSER 木绵绵系列合集`
+  let src = `E:\\图小乐\\木绵绵`
   const dest = `E:\\图小乐\\木绵绵`
   moveOutNextLevelDirectory(src, dest)
 }
