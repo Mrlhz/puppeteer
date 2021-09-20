@@ -19,25 +19,15 @@ async function getIniFilePath(dir) {
   return result
 }
 
-async function getIniFileText(src) {
-  const list = await getIniFilePath(src)
-  return list.map(item => {
-    return {
-      file: item,
-      text: readIniFile(item)
-    }
-  })
-}
-
 async function compilerIniText(src) {
-  const textList = await getIniFileText(src)
-  const result = textList.map(item => {
-    const text = item.text
+  const filePathList = await getIniFilePath(src)
+  const result = filePathList.map(item => {
+    const text = readIniFile(item)
     const title = text.match(/InfoTip=(.*?)\n/) // console.log(text.split('\n')[1].split('=')[1])
     return {
       title: title ? title[1] : '',
-      path: item.file,
-      dir: path.dirname(item.file),
+      path: item,
+      dir: path.dirname(item),
       text
     }
   })
@@ -59,12 +49,12 @@ function generateMarkdown(filePath, data) {
   fs.outputFileSync(file, text)
 }
 
-async function writeTxtFile(src) {
-  const list = await getIniFileText(src)
-  const taskList = list.map(item => {
-    const { dir, name } = path.parse(item.file)
+async function writeTxtFile(data = []) {
+  const taskList = data.map(item => {
+    const { dir, name } = path.parse(item.path)
     const outputFilePath = path.resolve(dir, `${name}.txt`)
-    return fs.outputFile(outputFilePath, item.text, { encoding: 'utf8' })
+    const outputFile = () => fs.outputFile(outputFilePath, item.text, { encoding: 'utf8' })
+    return fs.pathExistsSync(outputFilePath) ? Promise.resolve('exist') : outputFile()
   })
   await Promise.allSettled(taskList)
 }
@@ -73,7 +63,7 @@ async function init(src) {
   const data = await compilerIniText(src)
   generateJSON(src, data)
   generateMarkdown(src, data)
-  await writeTxtFile(src)
+  await writeTxtFile(data)
   console.log(data[0])
 }
 
