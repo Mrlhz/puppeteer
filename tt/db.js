@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
 function connect(database) {
+  if (mongoose.connection.readyState === 1) {
+    console.log('connect success')
+    return Promise.resolve(database)
+  }
   if (!database) throw new Error('database can\'t be null or undefined')
   const connectDb = 'mongodb://localhost/' + database
   mongoose.set('useFindAndModify', false) // https://mongoosejs.com/docs/deprecations.html
