@@ -11,9 +11,9 @@ function readDirectorySync(dir) {
   return files.length === 1 ? path.resolve(dir, files[0]) : files.map(item => path.resolve(dir, item))
 }
 
-async function move (src, dest) {
+async function move (src, dest, options = {}) {
   try {
-    await fs.move(src, dest)
+    await fs.move(src, dest, options)
     console.log('success')
   } catch (err) {
     console.error(err)
@@ -61,7 +61,7 @@ async function moveOutNextLevelDirectory(src, dest) {
   if (!fs.pathExistsSync(src) || !fs.pathExistsSync(dest)) return
   const list = genOutputPath(src, dest)
   // console.log(list)
-  const tasks = list.map(item => move(item.src, item.dest))
+  const tasks = list.map(item => move(item.src, item.dest, { overwrite: false }))
   await Promise.allSettled(tasks)
 }
 
