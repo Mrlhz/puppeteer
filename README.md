@@ -1,5 +1,8 @@
 # Puppeteer 使用
 
+- [Puppeteer](https://pptr.dev/)
+- [Puppeteer v18.0.5](http://www.puppeteerjs.com/#?product=Puppeteer&version=v18.0.5)
+- [PPuppeteer 中文文档](https://learnku.com/docs/puppeteer/3.1.0)
 - [chromium官方下载网站](https://download-chromium.appspot.com/)
 - [puppeteer 文档](https://pptr.dev/)
 - [puppeteer 中文文档](https://zhaoqize.github.io/puppeteer-api-zh_CN)
